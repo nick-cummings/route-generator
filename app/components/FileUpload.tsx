@@ -2,6 +2,8 @@
 
 import { ChangeEvent } from 'react'
 
+import { useLanguage } from '../contexts/LanguageContext'
+
 interface FileUploadProps {
   files: File[]
   fileInputKey: number
@@ -15,6 +17,7 @@ export default function FileUpload({
   onFileSelect,
   onClearFiles,
 }: Readonly<FileUploadProps>): React.JSX.Element {
+  const { t } = useLanguage()
   const fileCount = files.length
 
   return (
@@ -48,13 +51,14 @@ export default function FileUpload({
               {fileCount > 0
                 ? (() => {
                     const count = String(fileCount)
-                    const plural = fileCount > 1 ? 's' : ''
-                    return `${count} image${plural} selected`
+                    const imageText =
+                      fileCount > 1 ? t.fileUpload.imagesSelected : t.fileUpload.imageSelected
+                    return `${count} ${imageText}`
                   })()
-                : 'Click to select screenshots'}
+                : t.fileUpload.clickToSelect}
             </p>
             {fileCount > 0 && (
-              <p className="text-xs text-gray-500 mt-1">Click again to add more screenshots</p>
+              <p className="text-xs text-gray-500 mt-1">{t.fileUpload.clickAgain}</p>
             )}
           </div>
         </label>
@@ -64,26 +68,30 @@ export default function FileUpload({
         <div className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm text-gray-600">
-              {String(fileCount)} screenshot{fileCount > 1 ? 's' : ''} ready to process
+              {String(fileCount)}{' '}
+              {fileCount > 1 ? t.fileUpload.screenshotsReady : t.fileUpload.readyToProcess}
             </span>
             <button
               onClick={onClearFiles}
               type="button"
-              className="text-sm text-red-600 hover:text-red-700"
+              className="text-sm text-red-600 hover:text-red-700 p-1"
             >
-              Clear all
+              {t.common.clearAll}
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {files.map((file, idx) => (
               <div key={idx} className="relative group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={URL.createObjectURL(file)}
                   alt={`Preview ${String(idx + 1)}`}
-                  className="w-full h-32 object-cover rounded-lg"
+                  className="w-full h-48 sm:h-32 object-cover rounded-lg shadow-sm"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg" />
+                <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs">
+                  {String(idx + 1)}
+                </div>
               </div>
             ))}
           </div>

@@ -1,3 +1,7 @@
+'use client'
+
+import { useLanguage } from '../contexts/LanguageContext'
+
 interface ProcessingStatusProps {
   loading: boolean
   progress: number
@@ -11,11 +15,13 @@ export default function ProcessingStatus({
   error,
   onReset,
 }: Readonly<ProcessingStatusProps>): React.JSX.Element | null {
+  const { t } = useLanguage()
+
   if (loading) {
     return (
       <div className="text-center">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mb-4"></div>
-        <p className="text-gray-600 mb-2">Processing images...</p>
+        <p className="text-gray-600 mb-2">{t.extraction.processing}</p>
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
           <div
             className="bg-green-500 h-2 rounded-full transition-all duration-300"
@@ -33,9 +39,9 @@ export default function ProcessingStatus({
         <button
           onClick={onReset}
           type="button"
-          className="mt-2 text-sm text-red-600 hover:underline"
+          className="mt-3 text-sm text-red-600 hover:underline p-1"
         >
-          Try again
+          {t.common.tryAgain}
         </button>
       </div>
     )

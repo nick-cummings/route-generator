@@ -30,7 +30,7 @@ export default function MainContent({
   onReset,
 }: Readonly<MainContentProps>): React.JSX.Element {
   return (
-    <>
+    <div className="bg-white rounded-xl shadow-sm p-3 sm:p-6 mb-3 sm:mb-4">
       <FileUpload
         files={files}
         fileInputKey={fileInputKey}
@@ -41,6 +41,6 @@ export default function MainContent({
       {files.length > 0 && !loading && !hasAddresses && <ExtractButton onClick={onProcessImages} />}
 
       <ProcessingStatus loading={loading} progress={progress} error={error} onReset={onReset} />
-    </>
+    </div>
   )
 }
