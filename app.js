@@ -90,10 +90,54 @@ async function performOCR(file) {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const result = await Tesseract.recognize(e.target.result, "eng", {
-          logger: (m) => console.log(m),
-        });
-        resolve(result.data.text);
+        // Create an image element to preprocess
+        const img = new Image();
+        img.onload = async () => {
+          // Create canvas for preprocessing
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          // Draw original image
+          ctx.drawImage(img, 0, 0);
+          
+          // Get image data
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          
+          // Check if image is dark (dark theme)
+          let darkPixels = 0;
+          let totalPixels = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            if (brightness < 128) darkPixels++;
+            totalPixels++;
+          }
+          
+          const isDarkTheme = (darkPixels / totalPixels) > 0.5;
+          console.log("Dark theme detected:", isDarkTheme);
+          
+          // If dark theme, invert colors
+          if (isDarkTheme) {
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = 255 - data[i];       // Red
+              data[i + 1] = 255 - data[i + 1]; // Green
+              data[i + 2] = 255 - data[i + 2]; // Blue
+              // Alpha channel stays the same
+            }
+            ctx.putImageData(imageData, 0, 0);
+          }
+          
+          // Convert canvas to blob for Tesseract
+          canvas.toBlob(async (blob) => {
+            const result = await Tesseract.recognize(blob, "eng", {
+              logger: (m) => console.log(m),
+            });
+            resolve(result.data.text);
+          });
+        };
+        img.src = e.target.result;
       } catch (error) {
         reject(error);
       }
