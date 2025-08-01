@@ -13,11 +13,19 @@ const generateRouteBtn = document.getElementById("generateRouteBtn");
 const errorSection = document.getElementById("errorSection");
 const errorMessage = document.getElementById("errorMessage");
 const retryBtn = document.getElementById("retryBtn");
+const manualInputBtn = document.getElementById("manualInputBtn");
+const manualInputSection = document.getElementById("manualInputSection");
+const manualAddressInput = document.getElementById("manualAddressInput");
+const processManualBtn = document.getElementById("processManualBtn");
+const cancelManualBtn = document.getElementById("cancelManualBtn");
 
 // Event Listeners
 fileInput.addEventListener("change", handleFileSelect);
 generateRouteBtn.addEventListener("click", generateRoute);
 retryBtn.addEventListener("click", resetApp);
+manualInputBtn.addEventListener("click", showManualInput);
+processManualBtn.addEventListener("click", processManualAddresses);
+cancelManualBtn.addEventListener("click", hideManualInput);
 
 // Handle file selection
 function handleFileSelect(event) {
@@ -129,10 +137,17 @@ async function performOCR(file) {
             ctx.putImageData(imageData, 0, 0);
           }
           
+          // Enhance image contrast and sharpness
+          ctx.filter = 'contrast(1.5) brightness(1.1)';
+          ctx.drawImage(canvas, 0, 0);
+          
           // Convert canvas to blob for Tesseract
           canvas.toBlob(async (blob) => {
             const result = await Tesseract.recognize(blob, "eng", {
               logger: (m) => console.log(m),
+              tessedit_pageseg_mode: '6', // Uniform block of text
+              preserve_interword_spaces: '1',
+              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -.,#',
             });
             resolve(result.data.text);
           });
@@ -259,4 +274,39 @@ function resetApp() {
   processingSection.classList.add("hidden");
   resultsSection.classList.add("hidden");
   errorSection.classList.add("hidden");
+  manualInputSection.classList.add("hidden");
+}
+
+// Show manual input section
+function showManualInput() {
+  errorSection.classList.add("hidden");
+  manualInputSection.classList.remove("hidden");
+  manualAddressInput.focus();
+}
+
+// Hide manual input section
+function hideManualInput() {
+  manualInputSection.classList.add("hidden");
+  manualAddressInput.value = "";
+}
+
+// Process manually entered addresses
+function processManualAddresses() {
+  const text = manualAddressInput.value.trim();
+  if (!text) {
+    showError("Please enter at least one address");
+    return;
+  }
+  
+  // Split by newlines and filter empty lines
+  extractedAddresses = text.split("\n")
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+  
+  if (extractedAddresses.length > 0) {
+    manualInputSection.classList.add("hidden");
+    displayResults();
+  } else {
+    showError("No valid addresses entered");
+  }
 }

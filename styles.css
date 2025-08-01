@@ -229,6 +229,35 @@ h1 {
     background: #0051d5;
 }
 
+/* Manual Input Section */
+.manual-input-section {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.manual-hint {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.manual-address-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 1rem;
+}
+
+.manual-address-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
 /* Utility Classes */
 .hidden {
     display: none;

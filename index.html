@@ -51,6 +51,19 @@
             <div id="errorSection" class="error-section hidden">
                 <p id="errorMessage"></p>
                 <button id="retryBtn" class="retry-btn">Try Again</button>
+                <button id="manualInputBtn" class="retry-btn">Enter Addresses Manually</button>
+            </div>
+            
+            <div id="manualInputSection" class="manual-input-section hidden">
+                <h2>Enter Addresses Manually</h2>
+                <p class="manual-hint">Enter one address per line</p>
+                <textarea id="manualAddressInput" class="manual-address-input" placeholder="2802 East Comstock Avenue
+14 N Borah Way
+1401 N MIDLAND BLVD TRLR 23
+2001 W GROUSE ST
+51 N Poplar Forest Pl" rows="10"></textarea>
+                <button id="processManualBtn" class="generate-route-btn">Process Addresses</button>
+                <button id="cancelManualBtn" class="retry-btn">Cancel</button>
             </div>
         </main>
     </div>
