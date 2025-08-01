@@ -285,9 +285,9 @@ export default function Home() {
           )}
 
           {extractedAddresses.length > 0 && (
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Route Plan ({extractedAddresses.length} stops)</h2>
-              <div className="space-y-2 mb-4 sm:mb-6">
+            <div className="flex flex-col h-full">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex-shrink-0">Route Plan ({extractedAddresses.length} stops)</h2>
+              <div className="space-y-2 mb-4 sm:mb-6 max-h-[400px] overflow-y-auto pr-2 flex-grow custom-scrollbar">
                 {/* Starting location */}
                 <div className="flex items-center justify-between p-2.5 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -315,10 +315,10 @@ export default function Home() {
                 ))}
               </div>
               {extractedAddresses.length > 0 ? (
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-shrink-0 sticky bottom-0 bg-white pt-4 border-t border-gray-100">
                   <button
                     onClick={generateRoute}
-                    className="flex-1 bg-green-500 text-white py-2.5 sm:py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
+                    className="flex-1 bg-green-500 text-white py-2.5 sm:py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base shadow-sm"
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -328,7 +328,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={resetApp}
-                    className="px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
+                    className="px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base shadow-sm"
                   >
                     Reset
                   </button>
