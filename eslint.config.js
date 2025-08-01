@@ -120,6 +120,65 @@ export default tseslint.config(
       'no-var': 'error',
       'object-shorthand': 'error',
       'quote-props': ['error', 'as-needed'],
+
+      // Readability rules
+      'max-lines': [
+        'error',
+        {
+          max: 100,
+          skipBlankLines: true,
+          skipComments: true,
+        },
+      ],
+      'max-lines-per-function': [
+        'error',
+        {
+          max: 50,
+          skipBlankLines: true,
+          skipComments: true,
+          IIFEs: true,
+        },
+      ],
+      complexity: ['error', 10],
+      'max-depth': ['error', 4],
+      'max-nested-callbacks': ['error', 3],
+      'max-params': ['error', 4],
+      'max-statements': ['error', 15],
+      'id-length': [
+        'error',
+        {
+          min: 2,
+          max: 50,
+          properties: 'never',
+          exceptions: ['i', 'j', 'k', 'x', 'y', 'z', '_', 'e'],
+        },
+      ],
+      'prefer-destructuring': [
+        'error',
+        {
+          array: true,
+          object: true,
+        },
+        {
+          enforceForRenamedProperties: false,
+        },
+      ],
+    },
+  },
+  {
+    files: ['**/*.tsx'],
+    rules: {
+      // React components can be up to 100 lines
+      'max-lines-per-function': [
+        'error',
+        {
+          max: 100,
+          skipBlankLines: true,
+          skipComments: true,
+          IIFEs: true,
+        },
+      ],
+      'max-statements': ['error', 30], // Components may have more statements
     },
   },
   {
