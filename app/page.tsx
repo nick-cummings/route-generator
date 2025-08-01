@@ -29,10 +29,10 @@ export default function Home() {
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files)
-      setFiles(prevFiles => [...prevFiles, ...newFiles])
+      setFiles((prevFiles) => [...prevFiles, ...newFiles])
       setError(null)
       // Reset the file input so the same file can be selected again
-      setFileInputKey(prev => prev + 1)
+      setFileInputKey((prev) => prev + 1)
     }
   }
 
@@ -45,14 +45,15 @@ export default function Home() {
     setProgress(0)
 
     const addresses: Address[] = []
-    
+
     try {
       for (let i = 0; i < files.length; i++) {
         setProgress((i / files.length) * 100)
-        
+
         const formData = new FormData()
         formData.append('image', files[i])
-        const storedKey = typeof window !== 'undefined' ? localStorage.getItem('claude_api_key') : null
+        const storedKey =
+          typeof window !== 'undefined' ? localStorage.getItem('claude_api_key') : null
         formData.append('apiKey', storedKey || '')
 
         const response = await fetch('/api/extract-addresses', {
@@ -66,10 +67,12 @@ export default function Home() {
         }
 
         const data = await response.json()
-        addresses.push(...data.addresses.map((addr: string, idx: number) => ({
-          text: addr,
-          order: i * 100 + idx
-        })))
+        addresses.push(
+          ...data.addresses.map((addr: string, idx: number) => ({
+            text: addr,
+            order: i * 100 + idx,
+          }))
+        )
       }
 
       setProgress(100)
@@ -82,16 +85,19 @@ export default function Home() {
   }
 
   const removeAddress = (orderToRemove: number) => {
-    setExtractedAddresses(extractedAddresses.filter(addr => addr.order !== orderToRemove))
+    setExtractedAddresses(extractedAddresses.filter((addr) => addr.order !== orderToRemove))
   }
 
   const generateRoute = () => {
     if (extractedAddresses.length === 0) return
 
     // Start from current location (Google Maps uses 'My+Location' or empty string)
-    const stops = ['My+Location', ...extractedAddresses.map(addr => encodeURIComponent(addr.text))]
+    const stops = [
+      'My+Location',
+      ...extractedAddresses.map((addr) => encodeURIComponent(addr.text)),
+    ]
     const mapsUrl = 'https://www.google.com/maps/dir/' + stops.join('/')
-    
+
     window.open(mapsUrl, '_blank')
   }
 
@@ -101,7 +107,7 @@ export default function Home() {
     setError(null)
     setProgress(0)
     // Force file input to reset by changing its key
-    setFileInputKey(prev => prev + 1)
+    setFileInputKey((prev) => prev + 1)
   }
 
   const changeApiKey = () => {
@@ -143,15 +149,18 @@ export default function Home() {
         <div className="max-w-2xl mx-auto">
           <header className="text-center mb-6 pt-4 sm:pt-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Route Generator</h1>
-            <p className="text-sm sm:text-base text-gray-600">Extract addresses from screenshots and create routes</p>
+            <p className="text-sm sm:text-base text-gray-600">
+              Extract addresses from screenshots and create routes
+            </p>
           </header>
 
           <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-semibold mb-4">Setup Claude API</h2>
             <p className="text-sm sm:text-base text-gray-600 mb-6">
-              Enter your Claude API key to extract addresses from images. Your key is stored locally and never sent to our servers.
+              Enter your Claude API key to extract addresses from images. Your key is stored locally
+              and never sent to our servers.
             </p>
-            
+
             <form onSubmit={handleApiKeySubmit}>
               <input
                 type="password"
@@ -167,10 +176,15 @@ export default function Home() {
                 Save API Key
               </button>
             </form>
-            
+
             <p className="text-sm text-gray-500 mt-4">
               Get your API key from{' '}
-              <a href="https://console.anthropic.com/account/keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              <a
+                href="https://console.anthropic.com/account/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
                 console.anthropic.com
               </a>
             </p>
@@ -184,8 +198,12 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 p-3 sm:p-4">
       <div className="max-w-4xl mx-auto">
         <header className="text-center mb-4 sm:mb-8 pt-4 sm:pt-8">
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Route Generator</h1>
-          <p className="text-sm sm:text-base text-gray-600">Extract addresses from screenshots and create routes</p>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
+            Route Generator
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600">
+            Extract addresses from screenshots and create routes
+          </p>
         </header>
 
         <div className="bg-white rounded-xl shadow-lg p-4 sm:p-8 mb-4 sm:mb-6">
@@ -211,14 +229,23 @@ export default function Home() {
                 className="hidden"
               />
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-gray-400 transition-colors">
-                <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-2 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <svg
+                  className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-2 sm:mb-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
                 </svg>
                 <p className="text-sm sm:text-base text-gray-600">
-                  {files.length > 0 
+                  {files.length > 0
                     ? `${files.length} image${files.length > 1 ? 's' : ''} selected`
-                    : 'Click to select screenshots'
-                  }
+                    : 'Click to select screenshots'}
                 </p>
                 {files.length > 0 && (
                   <p className="text-xs text-gray-500 mt-1">Click again to add more screenshots</p>
@@ -230,7 +257,9 @@ export default function Home() {
           {files.length > 0 && (
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-gray-600">{files.length} screenshot{files.length > 1 ? 's' : ''} ready to process</span>
+                <span className="text-sm text-gray-600">
+                  {files.length} screenshot{files.length > 1 ? 's' : ''} ready to process
+                </span>
                 <button
                   onClick={() => setFiles([])}
                   className="text-sm text-red-600 hover:text-red-700"
@@ -241,6 +270,7 @@ export default function Home() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {files.map((file, idx) => (
                   <div key={idx} className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={URL.createObjectURL(file)}
                       alt={`Preview ${idx + 1}`}
@@ -267,7 +297,10 @@ export default function Home() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mb-4"></div>
               <p className="text-gray-600 mb-2">Processing images...</p>
               <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                <div className="bg-green-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+                <div
+                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
             </div>
           )}
@@ -275,10 +308,7 @@ export default function Home() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <p className="text-red-700">{error}</p>
-              <button
-                onClick={resetApp}
-                className="mt-2 text-sm text-red-600 hover:underline"
-              >
+              <button onClick={resetApp} className="mt-2 text-sm text-red-600 hover:underline">
                 Try again
               </button>
             </div>
@@ -286,30 +316,51 @@ export default function Home() {
 
           {extractedAddresses.length > 0 && (
             <div className="flex flex-col h-full">
-              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex-shrink-0">Route Plan ({extractedAddresses.length} stops)</h2>
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex-shrink-0">
+                Route Plan ({extractedAddresses.length} stops)
+              </h2>
               {/* On mobile: show all addresses, on desktop: scrollable container */}
               <div className="space-y-2 mb-20 sm:mb-4 sm:max-h-[400px] sm:overflow-y-auto sm:pr-2 flex-grow sm:custom-scrollbar">
                 {/* Starting location */}
                 <div className="flex items-center justify-between p-2.5 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-sm font-medium text-blue-600">📍</span>
-                    <span className="text-sm sm:text-base text-blue-700 font-medium">Your Current Location</span>
+                    <span className="text-sm sm:text-base text-blue-700 font-medium">
+                      Your Current Location
+                    </span>
                   </div>
                   <span className="text-xs text-blue-600 uppercase tracking-wide">Start</span>
                 </div>
                 {extractedAddresses.map((addr, idx) => (
-                  <div key={addr.order} className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div
+                    key={addr.order}
+                    className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                      <span className="text-xs sm:text-sm font-medium text-gray-500 w-4 sm:w-6 flex-shrink-0">{idx + 1}.</span>
-                      <span className="text-sm sm:text-base text-gray-700 truncate">{addr.text}</span>
+                      <span className="text-xs sm:text-sm font-medium text-gray-500 w-4 sm:w-6 flex-shrink-0">
+                        {idx + 1}.
+                      </span>
+                      <span className="text-sm sm:text-base text-gray-700 truncate">
+                        {addr.text}
+                      </span>
                     </div>
                     <button
                       onClick={() => removeAddress(addr.order)}
                       className="text-red-500 hover:text-red-700 transition-colors p-1 flex-shrink-0 ml-2"
                       title="Remove this address"
                     >
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -321,9 +372,24 @@ export default function Home() {
                     onClick={generateRoute}
                     className="flex-1 bg-green-500 text-white py-2.5 sm:py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base shadow-sm"
                   >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <svg
+                      className="w-4 h-4 sm:w-5 sm:h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
                     </svg>
                     Open in Google Maps
                   </button>

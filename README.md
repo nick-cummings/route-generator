@@ -20,17 +20,20 @@ A Next.js web application that extracts delivery addresses from screenshots and 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/nick-cummings/route-generator.git
 cd route-generator
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -51,6 +54,7 @@ npm run dev
 ### Vercel (Recommended)
 
 #### Method 1: Deploy with Vercel CLI
+
 ```bash
 # Install Vercel CLI globally
 bun add -g vercel
@@ -63,6 +67,7 @@ vercel --prod
 ```
 
 #### Method 2: Deploy via GitHub
+
 1. Push your code to GitHub
 2. Go to [vercel.com](https://vercel.com)
 3. Click "Add New Project"
@@ -70,7 +75,9 @@ vercel --prod
 5. Click "Deploy" (Vercel auto-detects Next.js and bun)
 
 ### Environment Variables
+
 After deployment, you'll need to add your Claude API key in Vercel:
+
 1. Go to your project settings in Vercel dashboard
 2. Navigate to "Environment Variables"
 3. Add: `ANTHROPIC_API_KEY = your-api-key-here`
@@ -79,6 +86,7 @@ After deployment, you'll need to add your Claude API key in Vercel:
 ### Other Platforms
 
 The app can be deployed to any platform that supports Next.js:
+
 - Netlify (requires build command adjustment)
 - Railway
 - Render

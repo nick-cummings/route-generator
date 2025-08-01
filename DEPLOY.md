@@ -1,11 +1,13 @@
 # 🚀 Quick Vercel Deployment Guide
 
 ## Prerequisites
+
 - GitHub account
 - Vercel account (free at vercel.com)
 - Your Claude API key
 
 ## Step 1: Push to GitHub
+
 ```bash
 git add .
 git commit -m "feat: Next.js route generator with Claude API"
@@ -59,6 +61,7 @@ vercel env add ANTHROPIC_API_KEY
 ## Updating
 
 Future updates are automatic:
+
 ```bash
 git push origin main
 # Vercel auto-deploys changes!
