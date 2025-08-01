@@ -122,14 +122,14 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-2xl mx-auto">
-          <header className="text-center mb-8 pt-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Route Generator</h1>
-            <p className="text-gray-600">Extract addresses from screenshots and create routes</p>
+          <header className="text-center mb-6 pt-4 sm:pt-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Route Generator</h1>
+            <p className="text-sm sm:text-base text-gray-600">Extract addresses from screenshots and create routes</p>
           </header>
 
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-semibold mb-4">Setup Claude API</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Setup Claude API</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">
               Enter your Claude API key to extract addresses from images. Your key is stored locally and never sent to our servers.
             </p>
             
@@ -162,19 +162,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4">
       <div className="max-w-4xl mx-auto">
-        <header className="text-center mb-8 pt-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Route Generator</h1>
-          <p className="text-gray-600">Extract addresses from screenshots and create routes</p>
+        <header className="text-center mb-4 sm:mb-8 pt-4 sm:pt-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">Route Generator</h1>
+          <p className="text-sm sm:text-base text-gray-600">Extract addresses from screenshots and create routes</p>
         </header>
 
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-sm text-gray-600">API Key: Configured</span>
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-8 mb-4 sm:mb-6">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <span className="text-xs sm:text-sm text-gray-600">API Key: Configured</span>
             <button
               onClick={changeApiKey}
-              className="text-sm text-blue-600 hover:underline"
+              className="text-xs sm:text-sm text-blue-600 hover:underline"
             >
               Change
             </button>
@@ -189,11 +189,11 @@ export default function Home() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-gray-400 transition-colors">
+                <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-2 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   {files.length > 0 
                     ? `${files.length} image${files.length > 1 ? 's' : ''} selected`
                     : 'Click to select screenshots'
@@ -219,7 +219,7 @@ export default function Home() {
           {files.length > 0 && !loading && extractedAddresses.length === 0 && (
             <button
               onClick={processImages}
-              className="w-full bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors"
+              className="w-full bg-green-500 text-white py-2.5 sm:py-3 rounded-lg font-medium hover:bg-green-600 transition-colors text-sm sm:text-base"
             >
               Extract Addresses
             </button>
@@ -249,28 +249,28 @@ export default function Home() {
 
           {extractedAddresses.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">Route Plan ({extractedAddresses.length} stops)</h2>
-              <div className="space-y-2 mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Route Plan ({extractedAddresses.length} stops)</h2>
+              <div className="space-y-2 mb-4 sm:mb-6">
                 {/* Starting location */}
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between p-2.5 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-sm font-medium text-blue-600">📍</span>
-                    <span className="text-blue-700 font-medium">Your Current Location</span>
+                    <span className="text-sm sm:text-base text-blue-700 font-medium">Your Current Location</span>
                   </div>
                   <span className="text-xs text-blue-600 uppercase tracking-wide">Start</span>
                 </div>
                 {extractedAddresses.map((addr, idx) => (
-                  <div key={addr.order} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-gray-500 w-6">{idx + 1}.</span>
-                      <span className="text-gray-700">{addr.text}</span>
+                  <div key={addr.order} className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <span className="text-xs sm:text-sm font-medium text-gray-500 w-4 sm:w-6 flex-shrink-0">{idx + 1}.</span>
+                      <span className="text-sm sm:text-base text-gray-700 truncate">{addr.text}</span>
                     </div>
                     <button
                       onClick={() => removeAddress(addr.order)}
-                      className="text-red-500 hover:text-red-700 transition-colors p-1"
+                      className="text-red-500 hover:text-red-700 transition-colors p-1 flex-shrink-0 ml-2"
                       title="Remove this address"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -278,12 +278,12 @@ export default function Home() {
                 ))}
               </div>
               {extractedAddresses.length > 0 ? (
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <button
                     onClick={generateRoute}
-                    className="flex-1 bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 bg-green-500 text-white py-2.5 sm:py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -291,7 +291,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={resetApp}
-                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
                   >
                     Reset
                   </button>
