@@ -44,6 +44,7 @@ export const es = {
   actions: {
     openInGoogleMaps: 'Abrir en Google Maps',
     generateRoute: 'Generar Ruta',
+    avoidHighways: 'Evitar autopistas',
   },
   errors: {
     missingImage: 'Falta la imagen',

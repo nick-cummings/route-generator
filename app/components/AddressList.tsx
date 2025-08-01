@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 import { useLanguage } from '../contexts/LanguageContext'
 
 import AddressItem from './AddressItem'
@@ -13,7 +15,7 @@ interface Address {
 interface AddressListProps {
   addresses: Address[]
   onRemoveAddress: (order: number) => void
-  onGenerateRoute: () => void
+  onGenerateRoute: (avoidHighways: boolean) => void
   onReset: () => void
 }
 
@@ -24,6 +26,7 @@ export default function AddressList({
   onReset,
 }: Readonly<AddressListProps>): React.JSX.Element {
   const { t } = useLanguage()
+  const [avoidHighways, setAvoidHighways] = useState(false)
   const addressCount = addresses.length
 
   if (addressCount === 0) {
@@ -72,7 +75,21 @@ export default function AddressList({
           />
         ))}
       </div>
-        <RouteActions onGenerateRoute={onGenerateRoute} onReset={onReset} />
+        <div className="flex-shrink-0">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <input
+              type="checkbox"
+              id="avoidHighways"
+              checked={avoidHighways}
+              onChange={(e) => setAvoidHighways(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="avoidHighways" className="text-sm text-gray-700 select-none cursor-pointer">
+              {t.actions.avoidHighways}
+            </label>
+          </div>
+          <RouteActions onGenerateRoute={() => onGenerateRoute(avoidHighways)} onReset={onReset} />
+        </div>
       </div>
     </div>
   )

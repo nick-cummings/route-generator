@@ -45,14 +45,20 @@ export default function Home(): React.JSX.Element {
     }
   }
 
-  const generateRoute = (): void => {
+  const generateRoute = (avoidHighways: boolean): void => {
     if (extractedAddresses.length === 0) return
 
     const stops = [
       'My+Location',
       ...extractedAddresses.map((addr) => encodeURIComponent(addr.text)),
     ]
-    const mapsUrl = 'https://www.google.com/maps/dir/' + stops.join('/')
+    let mapsUrl = 'https://www.google.com/maps/dir/' + stops.join('/')
+    
+    // Add data parameter to avoid highways if selected
+    if (avoidHighways) {
+      mapsUrl += '/data=!4m2!4m1!3e0!5m1!1e1'
+    }
+    
     window.open(mapsUrl, '_blank')
   }
 
