@@ -43,7 +43,7 @@ export default function AddressList({
       <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex-shrink-0">
         Route Plan ({String(addressCount)} stops)
       </h2>
-      <div className="space-y-2 mb-20 sm:mb-4 sm:max-h-[400px] sm:overflow-y-auto sm:pr-2 flex-grow sm:custom-scrollbar">
+      <div className="space-y-2 pb-32 sm:pb-0 sm:mb-4 sm:max-h-[400px] sm:overflow-y-auto sm:pr-2 flex-grow sm:custom-scrollbar">
         <div className="flex items-center justify-between p-2.5 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="text-sm font-medium text-blue-600">📍</span>
