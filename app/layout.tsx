@@ -6,7 +6,14 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Route Generator',
-  description: 'Extract addresses from screenshots and create routes',
+  description: 'Extract addresses from delivery screenshots and create optimized routes in Google Maps',
+  keywords: 'route generator, delivery routes, address extraction, google maps, route optimization',
+  authors: [{ name: 'Nick Cummings' }],
+  openGraph: {
+    title: 'Route Generator',
+    description: 'Extract addresses from delivery screenshots and create optimized routes',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({

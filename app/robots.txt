@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://route-generator.vercel.app/sitemap.xml
