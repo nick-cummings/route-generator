@@ -76,6 +76,10 @@ export default function Home() {
     }
   }
 
+  const removeAddress = (orderToRemove: number) => {
+    setExtractedAddresses(extractedAddresses.filter(addr => addr.order !== orderToRemove))
+  }
+
   const generateRoute = () => {
     if (extractedAddresses.length === 0) return
 
@@ -244,30 +248,56 @@ export default function Home() {
 
           {extractedAddresses.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">Extracted Addresses</h2>
-              <ol className="list-decimal list-inside space-y-2 mb-6">
+              <h2 className="text-xl font-semibold mb-4">Extracted Addresses ({extractedAddresses.length} stops)</h2>
+              <div className="space-y-2 mb-6">
                 {extractedAddresses.map((addr, idx) => (
-                  <li key={idx} className="text-gray-700">{addr.text}</li>
+                  <div key={addr.order} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-gray-500 w-6">{idx + 1}.</span>
+                      <span className="text-gray-700">{addr.text}</span>
+                    </div>
+                    <button
+                      onClick={() => removeAddress(addr.order)}
+                      className="text-red-500 hover:text-red-700 transition-colors p-1"
+                      title="Remove this address"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
                 ))}
-              </ol>
-              <div className="flex gap-4">
-                <button
-                  onClick={generateRoute}
-                  className="flex-1 bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Open in Google Maps
-                </button>
-                <button
-                  onClick={resetApp}
-                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Reset
-                </button>
               </div>
+              {extractedAddresses.length > 0 ? (
+                <div className="flex gap-4">
+                  <button
+                    onClick={generateRoute}
+                    className="flex-1 bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Open in Google Maps
+                  </button>
+                  <button
+                    onClick={resetApp}
+                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Reset
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">All addresses have been removed</p>
+                  <button
+                    onClick={resetApp}
+                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Start Over
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
