@@ -287,7 +287,8 @@ export default function Home() {
           {extractedAddresses.length > 0 && (
             <div className="flex flex-col h-full">
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex-shrink-0">Route Plan ({extractedAddresses.length} stops)</h2>
-              <div className="space-y-2 mb-4 sm:mb-6 max-h-[400px] overflow-y-auto pr-2 flex-grow custom-scrollbar">
+              {/* On mobile: show all addresses, on desktop: scrollable container */}
+              <div className="space-y-2 mb-20 sm:mb-4 sm:max-h-[400px] sm:overflow-y-auto sm:pr-2 flex-grow sm:custom-scrollbar">
                 {/* Starting location */}
                 <div className="flex items-center justify-between p-2.5 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -315,7 +316,7 @@ export default function Home() {
                 ))}
               </div>
               {extractedAddresses.length > 0 ? (
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-shrink-0 sticky bottom-0 bg-white pt-4 border-t border-gray-100">
+                <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:bottom-auto sm:left-auto sm:right-auto flex flex-col sm:flex-row gap-3 sm:gap-4 flex-shrink-0 bg-white p-4 sm:p-0 sm:pt-4 border-t border-gray-200 sm:border-gray-100 shadow-lg sm:shadow-none z-10">
                   <button
                     onClick={generateRoute}
                     className="flex-1 bg-green-500 text-white py-2.5 sm:py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base shadow-sm"
