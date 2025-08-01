@@ -83,8 +83,9 @@ export default function Home() {
   const generateRoute = () => {
     if (extractedAddresses.length === 0) return
 
-    const mapsUrl = 'https://www.google.com/maps/dir/' + 
-      extractedAddresses.map(addr => encodeURIComponent(addr.text)).join('/')
+    // Start from current location (Google Maps uses 'My+Location' or empty string)
+    const stops = ['My+Location', ...extractedAddresses.map(addr => encodeURIComponent(addr.text))]
+    const mapsUrl = 'https://www.google.com/maps/dir/' + stops.join('/')
     
     window.open(mapsUrl, '_blank')
   }
@@ -248,8 +249,16 @@ export default function Home() {
 
           {extractedAddresses.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">Extracted Addresses ({extractedAddresses.length} stops)</h2>
+              <h2 className="text-xl font-semibold mb-4">Route Plan ({extractedAddresses.length} stops)</h2>
               <div className="space-y-2 mb-6">
+                {/* Starting location */}
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-blue-600">📍</span>
+                    <span className="text-blue-700 font-medium">Your Current Location</span>
+                  </div>
+                  <span className="text-xs text-blue-600 uppercase tracking-wide">Start</span>
+                </div>
                 {extractedAddresses.map((addr, idx) => (
                   <div key={addr.order} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex items-center gap-3">
