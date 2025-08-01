@@ -5,12 +5,25 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 import importPlugin from 'eslint-plugin-import'
 import next from '@next/eslint-plugin-next'
+import sonarjs from 'eslint-plugin-sonarjs'
+import unicorn from 'eslint-plugin-unicorn'
 import prettier from 'eslint-config-prettier'
 
 export default tseslint.config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+  sonarjs.configs.recommended,
+  unicorn.configs['flat/recommended'],
   prettier,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
   {
     plugins: {
       react,
@@ -53,16 +66,14 @@ export default tseslint.config(
       ...jsxA11y.configs.recommended.rules,
       'jsx-a11y/anchor-is-valid': 'off',
 
-      // TypeScript rules
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      // TypeScript rules (overrides for strict configs)
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
         },
       ],
-      '@typescript-eslint/no-explicit-any': 'warn',
 
       // Import rules
       'import/order': [
@@ -81,6 +92,22 @@ export default tseslint.config(
       // Next.js rules
       ...next.configs.recommended.rules,
       ...next.configs['core-web-vitals'].rules,
+
+      // Unicorn rule overrides (using recommended set from above)
+      'unicorn/filename-case': [
+        'error',
+        {
+          cases: {
+            camelCase: true,
+            pascalCase: true,
+            kebabCase: true,
+          },
+        },
+      ],
+      'unicorn/prevent-abbreviations': 'off', // Too opinionated for existing codebase
+      'unicorn/no-null': 'off', // React/TypeScript often uses null
+      'unicorn/prefer-module': 'off', // Next.js handles module system
+      'unicorn/prefer-top-level-await': 'off', // Not always supported
 
       // General rules
       'no-console': [

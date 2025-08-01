@@ -17,7 +17,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>

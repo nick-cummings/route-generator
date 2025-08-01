@@ -7,7 +7,12 @@ interface Address {
   order: number
 }
 
-export default function Home() {
+interface ApiResponse {
+  addresses?: string[]
+  error?: string
+}
+
+export default function Home(): React.JSX.Element {
   const [apiKey, setApiKey] = useState<string>('')
   const [isApiKeySet, setIsApiKeySet] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
@@ -18,17 +23,24 @@ export default function Home() {
   const [progress, setProgress] = useState(0)
   const [fileInputKey, setFileInputKey] = useState(0)
 
-  const handleApiKeySubmit = (e: React.FormEvent) => {
+  const handleApiKeySubmit = (e: React.FormEvent): void => {
     e.preventDefault()
-    if (apiKey.trim() && typeof window !== 'undefined') {
+    if (apiKey.trim().length > 0) {
       localStorage.setItem('claude_api_key', apiKey)
       setIsApiKeySet(true)
     }
   }
 
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files)
+      const fileList = e.target.files
+      const newFiles: File[] = []
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList.item(i)
+        if (file) {
+          newFiles.push(file)
+        }
+      }
       setFiles((prevFiles) => [...prevFiles, ...newFiles])
       setError(null)
       // Reset the file input so the same file can be selected again
@@ -36,7 +48,7 @@ export default function Home() {
     }
   }
 
-  const processImages = async () => {
+  const processImages = async (): Promise<void> => {
     if (files.length === 0) return
 
     setLoading(true)
@@ -52,9 +64,8 @@ export default function Home() {
 
         const formData = new FormData()
         formData.append('image', files[i])
-        const storedKey =
-          typeof window !== 'undefined' ? localStorage.getItem('claude_api_key') : null
-        formData.append('apiKey', storedKey || '')
+        const storedKey = localStorage.getItem('claude_api_key')
+        formData.append('apiKey', storedKey ?? '')
 
         const response = await fetch('/api/extract-addresses', {
           method: 'POST',
@@ -62,33 +73,36 @@ export default function Home() {
         })
 
         if (!response.ok) {
-          const data = await response.json()
-          throw new Error(data.error || 'Failed to process image')
+          const data = (await response.json()) as ApiResponse
+          throw new Error(data.error ?? 'Failed to process image')
         }
 
-        const data = await response.json()
-        addresses.push(
-          ...data.addresses.map((addr: string, idx: number) => ({
-            text: addr,
-            order: i * 100 + idx,
-          }))
-        )
+        const data = (await response.json()) as ApiResponse
+        if (data.addresses) {
+          addresses.push(
+            ...data.addresses.map((addr: string, idx: number) => ({
+              text: addr,
+              order: i * 100 + idx,
+            }))
+          )
+        }
       }
 
       setProgress(100)
-      setExtractedAddresses(addresses.sort((a, b) => a.order - b.order))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const sortedAddresses = [...addresses].sort((a, b) => a.order - b.order)
+      setExtractedAddresses(sortedAddresses)
+    } catch (error_) {
+      setError(error_ instanceof Error ? error_.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
   }
 
-  const removeAddress = (orderToRemove: number) => {
+  const removeAddress = (orderToRemove: number): void => {
     setExtractedAddresses(extractedAddresses.filter((addr) => addr.order !== orderToRemove))
   }
 
-  const generateRoute = () => {
+  const generateRoute = (): void => {
     if (extractedAddresses.length === 0) return
 
     // Start from current location (Google Maps uses 'My+Location' or empty string)
@@ -101,7 +115,7 @@ export default function Home() {
     window.open(mapsUrl, '_blank')
   }
 
-  const resetApp = () => {
+  const resetApp = (): void => {
     setFiles([])
     setExtractedAddresses([])
     setError(null)
@@ -110,10 +124,8 @@ export default function Home() {
     setFileInputKey((prev) => prev + 1)
   }
 
-  const changeApiKey = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('claude_api_key')
-    }
+  const changeApiKey = (): void => {
+    localStorage.removeItem('claude_api_key')
     setApiKey('')
     setIsApiKeySet(false)
     resetApp()
@@ -165,7 +177,9 @@ export default function Home() {
               <input
                 type="password"
                 value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                onChange={(e) => {
+                  setApiKey(e.target.value)
+                }}
                 placeholder="sk-ant-..."
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none mb-4"
               />
@@ -244,7 +258,11 @@ export default function Home() {
                 </svg>
                 <p className="text-sm sm:text-base text-gray-600">
                   {files.length > 0
-                    ? `${files.length} image${files.length > 1 ? 's' : ''} selected`
+                    ? (() => {
+                        const count = String(files.length)
+                        const plural = files.length > 1 ? 's' : ''
+                        return `${count} image${plural} selected`
+                      })()
                     : 'Click to select screenshots'}
                 </p>
                 {files.length > 0 && (
@@ -258,10 +276,12 @@ export default function Home() {
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-sm text-gray-600">
-                  {files.length} screenshot{files.length > 1 ? 's' : ''} ready to process
+                  {String(files.length)} screenshot{files.length > 1 ? 's' : ''} ready to process
                 </span>
                 <button
-                  onClick={() => setFiles([])}
+                  onClick={() => {
+                    setFiles([])
+                  }}
                   className="text-sm text-red-600 hover:text-red-700"
                 >
                   Clear all
@@ -273,7 +293,7 @@ export default function Home() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={URL.createObjectURL(file)}
-                      alt={`Preview ${idx + 1}`}
+                      alt={`Preview ${String(idx + 1)}`}
                       className="w-full h-32 object-cover rounded-lg"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg" />
@@ -285,7 +305,7 @@ export default function Home() {
 
           {files.length > 0 && !loading && extractedAddresses.length === 0 && (
             <button
-              onClick={processImages}
+              onClick={() => void processImages()}
               className="w-full bg-green-500 text-white py-2.5 sm:py-3 rounded-lg font-medium hover:bg-green-600 transition-colors text-sm sm:text-base"
             >
               Extract Addresses
@@ -299,7 +319,7 @@ export default function Home() {
               <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
                 <div
                   className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${String(progress)}%` }}
                 ></div>
               </div>
             </div>
@@ -317,7 +337,7 @@ export default function Home() {
           {extractedAddresses.length > 0 && (
             <div className="flex flex-col h-full">
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex-shrink-0">
-                Route Plan ({extractedAddresses.length} stops)
+                Route Plan ({String(extractedAddresses.length)} stops)
               </h2>
               {/* On mobile: show all addresses, on desktop: scrollable container */}
               <div className="space-y-2 mb-20 sm:mb-4 sm:max-h-[400px] sm:overflow-y-auto sm:pr-2 flex-grow sm:custom-scrollbar">
@@ -338,14 +358,16 @@ export default function Home() {
                   >
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                       <span className="text-xs sm:text-sm font-medium text-gray-500 w-4 sm:w-6 flex-shrink-0">
-                        {idx + 1}.
+                        {String(idx + 1)}.
                       </span>
                       <span className="text-sm sm:text-base text-gray-700 truncate">
                         {addr.text}
                       </span>
                     </div>
                     <button
-                      onClick={() => removeAddress(addr.order)}
+                      onClick={() => {
+                        removeAddress(addr.order)
+                      }}
                       className="text-red-500 hover:text-red-700 transition-colors p-1 flex-shrink-0 ml-2"
                       title="Remove this address"
                     >
@@ -370,6 +392,7 @@ export default function Home() {
                 <div className="fixed sm:sticky bottom-0 left-0 right-0 sm:bottom-auto sm:left-auto sm:right-auto flex flex-col sm:flex-row gap-3 sm:gap-4 flex-shrink-0 bg-white p-4 sm:p-0 sm:pt-4 border-t border-gray-200 sm:border-gray-100 shadow-lg sm:shadow-none z-10">
                   <button
                     onClick={generateRoute}
+                    type="button"
                     className="flex-1 bg-green-500 text-white py-2.5 sm:py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base shadow-sm"
                   >
                     <svg
@@ -395,6 +418,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={resetApp}
+                    type="button"
                     className="px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base shadow-sm"
                   >
                     Reset
@@ -405,6 +429,7 @@ export default function Home() {
                   <p className="text-gray-500 mb-4">All addresses have been removed</p>
                   <button
                     onClick={resetApp}
+                    type="button"
                     className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Start Over

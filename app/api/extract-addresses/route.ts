@@ -1,10 +1,10 @@
 import { Anthropic, APIError } from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const formData = await request.formData()
-    const image = formData.get('image') as File
+    const image = formData.get('image') as File | null
     const apiKey = (formData.get('apiKey') as string) || process.env.ANTHROPIC_API_KEY
 
     if (!image) {
@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
       ],
     })
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : ''
+    const content = response.content[0]
+    const text = 'text' in content ? content.text : ''
 
     if (text === 'NO_ADDRESSES_FOUND') {
       return NextResponse.json({ addresses: [] })
@@ -75,9 +76,7 @@ export async function POST(request: NextRequest) {
         if (words.length === 1) return false
 
         // Remove lines that don't start with a number (addresses typically start with numbers)
-        if (!/^\d/.test(line)) return false
-
-        return true
+        return /^\d/.test(line)
       })
 
     return NextResponse.json({ addresses })
