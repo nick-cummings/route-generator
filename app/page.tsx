@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, ChangeEvent } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 
 interface Address {
   text: string
@@ -18,7 +18,7 @@ export default function Home() {
 
   const handleApiKeySubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (apiKey.trim()) {
+    if (apiKey.trim() && typeof window !== 'undefined') {
       localStorage.setItem('claude_api_key', apiKey)
       setIsApiKeySet(true)
     }
@@ -47,7 +47,8 @@ export default function Home() {
         
         const formData = new FormData()
         formData.append('image', files[i])
-        formData.append('apiKey', localStorage.getItem('claude_api_key') || '')
+        const storedKey = typeof window !== 'undefined' ? localStorage.getItem('claude_api_key') : null
+        formData.append('apiKey', storedKey || '')
 
         const response = await fetch('/api/extract-addresses', {
           method: 'POST',
@@ -92,14 +93,16 @@ export default function Home() {
   }
 
   const changeApiKey = () => {
-    localStorage.removeItem('claude_api_key')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('claude_api_key')
+    }
     setApiKey('')
     setIsApiKeySet(false)
     resetApp()
   }
 
   // Check for saved API key on mount
-  useState(() => {
+  useEffect(() => {
     const savedKey = localStorage.getItem('claude_api_key')
     if (savedKey) {
       setApiKey(savedKey)
@@ -108,7 +111,7 @@ export default function Home() {
       // If env key is set on server, skip API key input
       setIsApiKeySet(true)
     }
-  })
+  }, [])
 
   if (!isApiKeySet) {
     return (
