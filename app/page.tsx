@@ -15,6 +15,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
+  const [fileInputKey, setFileInputKey] = useState(0)
 
   const handleApiKeySubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,6 +96,8 @@ export default function Home() {
     setExtractedAddresses([])
     setError(null)
     setProgress(0)
+    // Force file input to reset by changing its key
+    setFileInputKey(prev => prev + 1)
   }
 
   const changeApiKey = () => {
@@ -183,6 +186,8 @@ export default function Home() {
           <div className="mb-6">
             <label className="block">
               <input
+                key={fileInputKey}
+                id="fileInput"
                 type="file"
                 multiple
                 accept="image/*"
