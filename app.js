@@ -105,7 +105,7 @@ function extractAddresses(text) {
   const addresses = [];
   const lines = text.split("\n").filter((line) => line.trim());
 
-  // Address patterns
+  // Address patterns - updated to be more flexible
   const patterns = [
     // Full address with city, state, zip
     /\d+\s+[A-Za-z0-9\s\.,'-]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}\s*\d{5}(-\d{4})?/gi,
@@ -113,23 +113,49 @@ function extractAddresses(text) {
     /\d+\s+[A-Za-z0-9\s\.,'-]+\s+(Street|St\.?|Avenue|Ave\.?|Road|Rd\.?|Boulevard|Blvd\.?|Drive|Dr\.?|Lane|Ln\.?|Way|Court|Ct\.?|Circle|Cir\.?|Place|Pl\.?|Parkway|Pkwy\.?)/gi,
     // Apartment/unit numbers
     /\d+\s+[A-Za-z0-9\s\.,'-]+\s+(Apt|Apartment|Unit|Suite|Ste|#)\s*[A-Za-z0-9]+/gi,
+    // Simple pattern: number followed by words (for addresses like "2802 East Comstock Avenue")
+    /\d+\s+[NSEW]?\s*[A-Za-z]+\s+[A-Za-z]+(\s+[A-Za-z]+)*/gi,
+    // Pattern for addresses with trailer/unit numbers (like "1401 N MIDLAND BLVD TRLR 23")
+    /\d+\s+[NSEW]?\s*[A-Za-z]+\s+[A-Za-z]+\s+(BLVD|RD|ST|AVE|DR|WAY|CT|CIR|PL|PKWY|LN)?\s*(TRLR|APT|UNIT|STE|#)?\s*\d*/gi,
   ];
 
   // Check each line for address patterns
-  for (const line of lines) {
-    const cleanLine = line.trim();
+  for (let i = 0; i < lines.length; i++) {
+    const cleanLine = lines[i].trim();
+    
+    // Skip empty lines
+    if (!cleanLine) {
+      continue;
+    }
+    
+    // Check if the line matches any address pattern
+    let foundAddress = false;
     for (const pattern of patterns) {
       const matches = cleanLine.match(pattern);
       if (matches) {
         matches.forEach((match) => {
           // Clean up the address
           const cleanAddress = match.trim().replace(/\s+/g, " ");
-          // Avoid duplicates
-          if (!addresses.includes(cleanAddress)) {
+          // Avoid duplicates and filter out single words
+          if (!addresses.includes(cleanAddress) && cleanAddress.split(" ").length > 2) {
             addresses.push(cleanAddress);
+            foundAddress = true;
           }
         });
-        break; // Stop checking patterns once we find a match
+        if (foundAddress) break;
+      }
+    }
+    
+    // If this line looks like it could be an address based on context
+    // (i.e., the next line is a single word that could be a city name), include it
+    if (!foundAddress && i < lines.length - 1) {
+      const nextLine = lines[i + 1].trim();
+      // Check if current line starts with a number and next line is a single word (likely city)
+      if (cleanLine.match(/^\d+\s+/) && nextLine.match(/^[A-Za-z]+$/)) {
+        const cleanAddress = cleanLine.trim().replace(/\s+/g, " ");
+        if (!addresses.includes(cleanAddress) && cleanAddress.split(" ").length >= 2) {
+          addresses.push(cleanAddress);
+        }
       }
     }
   }
