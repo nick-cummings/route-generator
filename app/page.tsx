@@ -27,8 +27,11 @@ export default function Home() {
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files))
+      const newFiles = Array.from(e.target.files)
+      setFiles(prevFiles => [...prevFiles, ...newFiles])
       setError(null)
+      // Reset the file input so the same file can be selected again
+      setFileInputKey(prev => prev + 1)
     }
   }
 
@@ -204,20 +207,36 @@ export default function Home() {
                     : 'Click to select screenshots'
                   }
                 </p>
+                {files.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">Click again to add more screenshots</p>
+                )}
               </div>
             </label>
           </div>
 
           {files.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-              {files.map((file, idx) => (
-                <img
-                  key={idx}
-                  src={URL.createObjectURL(file)}
-                  alt={`Preview ${idx + 1}`}
-                  className="w-full h-32 object-cover rounded-lg"
-                />
-              ))}
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm text-gray-600">{files.length} screenshot{files.length > 1 ? 's' : ''} ready to process</span>
+                <button
+                  onClick={() => setFiles([])}
+                  className="text-sm text-red-600 hover:text-red-700"
+                >
+                  Clear all
+                </button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {files.map((file, idx) => (
+                  <div key={idx} className="relative group">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`Preview ${idx + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg" />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
