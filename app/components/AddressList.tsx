@@ -75,21 +75,12 @@ export default function AddressList({
           />
         ))}
       </div>
-        <div className="flex-shrink-0">
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <input
-              type="checkbox"
-              id="avoidHighways"
-              checked={avoidHighways}
-              onChange={(e) => setAvoidHighways(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label htmlFor="avoidHighways" className="text-sm text-gray-700 select-none cursor-pointer">
-              {t.actions.avoidHighways}
-            </label>
-          </div>
-          <RouteActions onGenerateRoute={() => onGenerateRoute(avoidHighways)} onReset={onReset} />
-        </div>
+        <RouteActions 
+          onGenerateRoute={() => onGenerateRoute(avoidHighways)} 
+          onReset={onReset}
+          avoidHighways={avoidHighways}
+          onAvoidHighwaysChange={setAvoidHighways}
+        />
       </div>
     </div>
   )
