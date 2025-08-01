@@ -10,6 +10,7 @@ interface Address {
 export default function Home() {
   const [apiKey, setApiKey] = useState<string>('')
   const [isApiKeySet, setIsApiKeySet] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [extractedAddresses, setExtractedAddresses] = useState<Address[]>([])
   const [loading, setLoading] = useState(false)
@@ -122,7 +123,19 @@ export default function Home() {
       // If env key is set on server, skip API key input
       setIsApiKeySet(true)
     }
+    setIsInitialized(true)
   }, [])
+
+  // Show loading state during initialization
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </div>
+    )
+  }
 
   if (!isApiKeySet) {
     return (
