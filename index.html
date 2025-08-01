@@ -15,7 +15,19 @@
         </header>
         
         <main>
-            <div class="upload-section">
+            <div id="apiKeySection" class="api-key-section">
+                <h2>Setup Claude API</h2>
+                <p class="api-key-hint">Enter your Claude API key to extract addresses from images. Your key is stored locally and never sent to our servers.</p>
+                <input type="password" id="apiKeyInput" class="api-key-input" placeholder="sk-ant-...">
+                <button id="saveApiKeyBtn" class="generate-route-btn">Save API Key</button>
+                <p class="api-key-help">Get your API key from <a href="https://console.anthropic.com/account/keys" target="_blank">console.anthropic.com</a></p>
+            </div>
+            
+            <div class="upload-section hidden">
+                <div class="api-status">
+                    <span>API Key: <span id="apiKeyStatus">Configured</span></span>
+                    <button id="changeApiKeyBtn" class="change-key-btn">Change</button>
+                </div>
                 <input type="file" id="fileInput" multiple accept="image/*" class="file-input">
                 <label for="fileInput" class="upload-button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -68,7 +80,6 @@
         </main>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

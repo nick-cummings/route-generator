@@ -1,5 +1,6 @@
 // Route Generator App
 let extractedAddresses = [];
+let apiKey = localStorage.getItem('claude_api_key');
 
 // DOM Elements
 const fileInput = document.getElementById("fileInput");
@@ -18,6 +19,22 @@ const manualInputSection = document.getElementById("manualInputSection");
 const manualAddressInput = document.getElementById("manualAddressInput");
 const processManualBtn = document.getElementById("processManualBtn");
 const cancelManualBtn = document.getElementById("cancelManualBtn");
+const apiKeySection = document.getElementById("apiKeySection");
+const apiKeyInput = document.getElementById("apiKeyInput");
+const saveApiKeyBtn = document.getElementById("saveApiKeyBtn");
+const uploadSection = document.querySelector(".upload-section");
+const changeApiKeyBtn = document.getElementById("changeApiKeyBtn");
+
+// Initialize app
+function initApp() {
+  if (apiKey) {
+    apiKeySection.classList.add("hidden");
+    uploadSection.classList.remove("hidden");
+  } else {
+    apiKeySection.classList.remove("hidden");
+    uploadSection.classList.add("hidden");
+  }
+}
 
 // Event Listeners
 fileInput.addEventListener("change", handleFileSelect);
@@ -26,6 +43,32 @@ retryBtn.addEventListener("click", resetApp);
 manualInputBtn.addEventListener("click", showManualInput);
 processManualBtn.addEventListener("click", processManualAddresses);
 cancelManualBtn.addEventListener("click", hideManualInput);
+saveApiKeyBtn.addEventListener("click", saveApiKey);
+changeApiKeyBtn.addEventListener("click", changeApiKey);
+
+// Save API key
+function saveApiKey() {
+  const key = apiKeyInput.value.trim();
+  if (!key) {
+    alert("Please enter an API key");
+    return;
+  }
+  
+  apiKey = key;
+  localStorage.setItem('claude_api_key', key);
+  apiKeyInput.value = "";
+  initApp();
+}
+
+// Change API key
+function changeApiKey() {
+  if (confirm("Are you sure you want to change your API key?")) {
+    apiKey = null;
+    localStorage.removeItem('claude_api_key');
+    resetApp();
+    initApp();
+  }
+}
 
 // Handle file selection
 function handleFileSelect(event) {
@@ -51,7 +94,7 @@ function displayImagePreviews(files) {
   });
 }
 
-// Process images with OCR
+// Process images with Claude API
 async function processImages(files) {
   showProcessingSection();
   extractedAddresses = [];
@@ -66,10 +109,7 @@ async function processImages(files) {
         processedFiles + 1
       } of ${totalFiles}...`;
 
-      const text = await performOCR(file);
-      console.log("OCR extracted text:", text);
-      const addresses = extractAddresses(text);
-      console.log("Found addresses:", addresses);
+      const addresses = await extractAddressesFromImage(file);
       extractedAddresses.push(...addresses);
 
       processedFiles++;
@@ -81,134 +121,91 @@ async function processImages(files) {
       displayResults();
     } else {
       showError(
-        "No addresses found in the selected images. Please try different screenshots."
+        "No addresses found in the selected images. Please try different screenshots or use manual input."
       );
     }
   } catch (error) {
     console.error("Processing error:", error);
-    showError(
-      "An error occurred while processing the images. Please try again."
-    );
+    if (error.message.includes("401")) {
+      showError(
+        "Invalid API key. Please check your Claude API key and try again."
+      );
+    } else if (error.message.includes("429")) {
+      showError(
+        "Rate limit exceeded. Please wait a moment and try again."
+      );
+    } else {
+      showError(
+        "An error occurred while processing the images. Please try again."
+      );
+    }
   }
 }
 
-// Perform OCR on a single image
-async function performOCR(file) {
+// Extract addresses from image using Claude API
+async function extractAddressesFromImage(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        // Create an image element to preprocess
-        const img = new Image();
-        img.onload = async () => {
-          // Create canvas for preprocessing
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          
-          // Draw original image
-          ctx.drawImage(img, 0, 0);
-          
-          // Get image data
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imageData.data;
-          
-          // Check if image is dark (dark theme)
-          let darkPixels = 0;
-          let totalPixels = 0;
-          for (let i = 0; i < data.length; i += 4) {
-            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-            if (brightness < 128) darkPixels++;
-            totalPixels++;
-          }
-          
-          const isDarkTheme = (darkPixels / totalPixels) > 0.5;
-          console.log("Dark theme detected:", isDarkTheme);
-          
-          // If dark theme, invert colors
-          if (isDarkTheme) {
-            for (let i = 0; i < data.length; i += 4) {
-              data[i] = 255 - data[i];       // Red
-              data[i + 1] = 255 - data[i + 1]; // Green
-              data[i + 2] = 255 - data[i + 2]; // Blue
-              // Alpha channel stays the same
-            }
-            ctx.putImageData(imageData, 0, 0);
-          }
-          
-          // Enhance image contrast and sharpness
-          ctx.filter = 'contrast(1.5) brightness(1.1)';
-          ctx.drawImage(canvas, 0, 0);
-          
-          // Convert canvas to blob for Tesseract
-          canvas.toBlob(async (blob) => {
-            const result = await Tesseract.recognize(blob, "eng", {
-              logger: (m) => console.log(m),
-              tessedit_pageseg_mode: '6', // Uniform block of text
-              preserve_interword_spaces: '1',
-              tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -.,#',
-            });
-            resolve(result.data.text);
-          });
-        };
-        img.src = e.target.result;
+        // Convert to base64
+        const base64Data = e.target.result.split(',')[1];
+        
+        // Call Claude API
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-3-haiku-20240307',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: 'Extract all delivery addresses from this image. Return ONLY the addresses, one per line, in the order they appear. Include street number, street name, and any apartment/unit numbers. Do not include city names, timestamps, or any other information. If no addresses are found, return "NO_ADDRESSES_FOUND".'
+                },
+                {
+                  type: 'image',
+                  source: {
+                    type: 'base64',
+                    media_type: file.type,
+                    data: base64Data
+                  }
+                }
+              ]
+            }]
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const text = data.content[0].text;
+        
+        console.log("Claude API response:", text);
+        
+        if (text === "NO_ADDRESSES_FOUND") {
+          resolve([]);
+        } else {
+          // Split by newlines and clean up
+          const addresses = text.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0 && !line.includes('NO_ADDRESSES_FOUND'));
+          resolve(addresses);
+        }
       } catch (error) {
         reject(error);
       }
     };
     reader.readAsDataURL(file);
   });
-}
-
-// Extract addresses from text
-function extractAddresses(text) {
-  const addresses = [];
-  const lines = text.split("\n").filter((line) => line.trim());
-  
-  console.log("Processing lines:", lines);
-
-  // Address patterns - updated to be more flexible
-  const patterns = [
-    // Most flexible pattern first - any line starting with a number
-    /^\d+\s+.+$/i,
-    // Full address with city, state, zip
-    /\d+\s+[A-Za-z0-9\s\.,'-]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}\s*\d{5}(-\d{4})?/gi,
-    // Street address with common suffixes
-    /\d+\s+[A-Za-z0-9\s\.,'-]+\s+(Street|St\.?|Avenue|Ave\.?|Road|Rd\.?|Boulevard|Blvd\.?|Drive|Dr\.?|Lane|Ln\.?|Way|Court|Ct\.?|Circle|Cir\.?|Place|Pl\.?|Parkway|Pkwy\.?)/gi,
-    // Simple pattern: number followed by words
-    /\d+\s+[NSEW]?\s*[A-Za-z]+\s+[A-Za-z]+(\s+[A-Za-z]+)*/gi,
-  ];
-
-  // Check each line for address patterns
-  for (let i = 0; i < lines.length; i++) {
-    const cleanLine = lines[i].trim();
-    
-    // Skip empty lines
-    if (!cleanLine) {
-      continue;
-    }
-    
-    // Check if the line matches any address pattern
-    let foundAddress = false;
-    
-    // First check if it's a line that starts with a number
-    if (cleanLine.match(/^\d+\s+/)) {
-      console.log("Line starts with number:", cleanLine);
-      // Check if it's not just a number or time
-      if (!cleanLine.match(/^\d+:\d+/) && !cleanLine.match(/^\d+\s*$/) && cleanLine.split(" ").length >= 2) {
-        const cleanAddress = cleanLine.trim().replace(/\s+/g, " ");
-        if (!addresses.includes(cleanAddress)) {
-          addresses.push(cleanAddress);
-          console.log("Added address:", cleanAddress);
-          foundAddress = true;
-        }
-      }
-    }
-  }
-
-  console.log("Total addresses found:", addresses.length);
-  return addresses;
 }
 
 // Update progress bar
@@ -223,7 +220,7 @@ function displayResults() {
   resultsSection.classList.remove("hidden");
 
   addressList.innerHTML = "";
-  extractedAddresses.forEach((address, index) => {
+  extractedAddresses.forEach((address) => {
     const li = document.createElement("li");
     li.textContent = address;
     addressList.appendChild(li);
@@ -310,3 +307,6 @@ function processManualAddresses() {
     showError("No valid addresses entered");
   }
 }
+
+// Initialize on load
+initApp();

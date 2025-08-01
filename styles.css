@@ -229,6 +229,78 @@ h1 {
     background: #0051d5;
 }
 
+/* API Key Section */
+.api-key-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.api-key-hint {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.api-key-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 1rem;
+}
+
+.api-key-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.api-key-help {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 1rem;
+}
+
+.api-key-help a {
+    color: #0066CC;
+    text-decoration: none;
+}
+
+.api-key-help a:hover {
+    text-decoration: underline;
+}
+
+.api-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.change-key-btn {
+    background: transparent;
+    color: #0066CC;
+    border: 1px solid #0066CC;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.change-key-btn:hover {
+    background: #0066CC;
+    color: white;
+}
+
 /* Manual Input Section */
 .manual-input-section {
     text-align: center;
