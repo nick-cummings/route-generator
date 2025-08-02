@@ -69,7 +69,15 @@ export default function Home(): React.JSX.Element {
       mapsUrl += '&avoid=highways'
     }
     
-    window.open(mapsUrl, '_blank')
+    // Use location.href for mobile to avoid empty tab
+    // Check if mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    
+    if (isMobile) {
+      window.location.href = mapsUrl
+    } else {
+      window.open(mapsUrl, '_blank')
+    }
   }
 
   const resetApp = (): void => {
