@@ -48,23 +48,16 @@ export default function Home(): React.JSX.Element {
   const generateRoute = (avoidHighways: boolean): void => {
     if (extractedAddresses.length === 0) return
 
-    // For Google Maps directions with avoid highways, we need to use a different URL structure
-    const origin = 'My+Location'
-    const destination = encodeURIComponent(extractedAddresses[extractedAddresses.length - 1].text)
+    // Use the simpler format that works more reliably
+    // Start with current location (empty string means current location)
+    const stops = [
+      '', // Empty string for current location works better than 'My+Location'
+      ...extractedAddresses.map((addr) => encodeURIComponent(addr.text)),
+    ]
     
-    // Build waypoints for intermediate stops
-    const waypoints = extractedAddresses.slice(0, -1).map(addr => encodeURIComponent(addr.text))
+    // Use the /dir/ format with all stops
+    let mapsUrl = 'https://www.google.com/maps/dir/' + stops.join('/')
     
-    // Build the URL
-    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`
-    
-    // Add waypoints if any
-    if (waypoints.length > 0) {
-      mapsUrl += `&waypoints=${waypoints.join('|')}`
-    }
-    
-    // Add travel mode and avoid highways parameter
-    mapsUrl += '&travelmode=driving'
     if (avoidHighways) {
       mapsUrl += '&avoid=highways'
     }
