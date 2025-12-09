@@ -103,13 +103,17 @@ export default function Home(): React.JSX.Element {
   )
 }
 
+function encodeAddress(address: string): string {
+  return address.replaceAll(' ', '+')
+}
+
 function buildMapsUrl(addresses: Address[]): string | null {
   const lastAddress = addresses.at(-1)
   if (!lastAddress) return null
 
   const origin = 'My+Location'
-  const destination = encodeURIComponent(lastAddress.text)
-  const waypoints = addresses.slice(0, -1).map((addr) => encodeURIComponent(addr.text))
+  const destination = encodeAddress(lastAddress.text)
+  const waypoints = addresses.slice(0, -1).map((addr) => encodeAddress(addr.text))
 
   let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`
 
