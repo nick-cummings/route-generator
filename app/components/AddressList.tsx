@@ -14,6 +14,7 @@ interface AddressListProps {
   addresses: Address[]
   onRemoveAddress: (order: number) => void
   onGenerateRoute: () => void
+  onCopyLink: () => void
   onReset: () => void
 }
 
@@ -21,6 +22,7 @@ export default function AddressList({
   addresses,
   onRemoveAddress,
   onGenerateRoute,
+  onCopyLink,
   onReset,
 }: Readonly<AddressListProps>): React.JSX.Element {
   const { t } = useLanguage()
@@ -72,7 +74,7 @@ export default function AddressList({
             />
           ))}
         </div>
-        <RouteActions onGenerateRoute={onGenerateRoute} onReset={onReset} />
+        <RouteActions onGenerateRoute={onGenerateRoute} onCopyLink={onCopyLink} onReset={onReset} />
       </div>
     </div>
   )

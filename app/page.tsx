@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, ChangeEvent } from 'react'
+import { useState, useMemo, ChangeEvent } from 'react'
 
 import AddressList from './components/AddressList'
 import ApiKeySetup from './components/ApiKeySetup'
@@ -9,6 +9,11 @@ import MainContent from './components/MainContent'
 import PageHeader from './components/PageHeader'
 import { useAddressExtraction } from './hooks/useAddressExtraction'
 import { useApiKey } from './hooks/useApiKey'
+
+interface Address {
+  text: string
+  order: number
+}
 
 export default function Home(): React.JSX.Element {
   const [files, setFiles] = useState<File[]>([])
@@ -24,6 +29,8 @@ export default function Home(): React.JSX.Element {
     removeAddress,
     resetExtraction,
   } = useAddressExtraction()
+
+  const routeUrl = useMemo(() => buildMapsUrl(extractedAddresses), [extractedAddresses])
 
   const handleApiKeySubmit = (e: React.FormEvent): void => {
     e.preventDefault()
@@ -42,31 +49,6 @@ export default function Home(): React.JSX.Element {
       }
       setFiles((prevFiles) => [...prevFiles, ...newFiles])
       setFileInputKey((prev) => prev + 1)
-    }
-  }
-
-  const generateRoute = (): void => {
-    const lastAddress = extractedAddresses.at(-1)
-    if (!lastAddress) return
-
-    const origin = 'My+Location'
-    const destination = encodeURIComponent(lastAddress.text)
-    const waypoints = extractedAddresses.slice(0, -1).map(addr => encodeURIComponent(addr.text))
-
-    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`
-
-    if (waypoints.length > 0) {
-      mapsUrl += `&waypoints=${waypoints.join('|')}`
-    }
-
-    mapsUrl += '&travelmode=driving'
-
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-
-    if (isMobile) {
-      globalThis.location.href = mapsUrl
-    } else {
-      window.open(mapsUrl, '_blank')
     }
   }
 
@@ -111,11 +93,44 @@ export default function Home(): React.JSX.Element {
           <AddressList
             addresses={extractedAddresses}
             onRemoveAddress={removeAddress}
-            onGenerateRoute={generateRoute}
+            onGenerateRoute={() => routeUrl && openRoute(routeUrl)}
+            onCopyLink={() => routeUrl && copyRouteLink(routeUrl)}
             onReset={resetApp}
           />
         )}
       </div>
     </div>
   )
+}
+
+function buildMapsUrl(addresses: Address[]): string | null {
+  const lastAddress = addresses.at(-1)
+  if (!lastAddress) return null
+
+  const origin = 'My+Location'
+  const destination = encodeURIComponent(lastAddress.text)
+  const waypoints = addresses.slice(0, -1).map((addr) => encodeURIComponent(addr.text))
+
+  let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`
+
+  if (waypoints.length > 0) {
+    mapsUrl += `&waypoints=${waypoints.join('|')}`
+  }
+
+  mapsUrl += '&travelmode=driving'
+  return mapsUrl
+}
+
+function openRoute(url: string): void {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+  if (isMobile) {
+    globalThis.location.href = url
+  } else {
+    window.open(url, '_blank')
+  }
+}
+
+function copyRouteLink(url: string): void {
+  void navigator.clipboard.writeText(url)
 }

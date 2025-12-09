@@ -44,7 +44,8 @@ export const en = {
   actions: {
     openInGoogleMaps: 'Open in Google Maps',
     generateRoute: 'Generate Route',
-    avoidHighways: 'Avoid highways',
+    copyLink: 'Copy Link',
+    linkCopied: 'Link Copied!',
   },
   errors: {
     missingImage: 'Missing image',
