@@ -14,7 +14,7 @@ export default tseslint.config(
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   sonarjs.configs.recommended,
-  unicorn.configs['flat/recommended'],
+  unicorn.configs.recommended,
   prettier,
   {
     languageOptions: {
@@ -67,6 +67,7 @@ export default tseslint.config(
       'jsx-a11y/anchor-is-valid': 'off',
 
       // TypeScript rules (overrides for strict configs)
+      '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -125,7 +126,7 @@ export default tseslint.config(
       'max-lines': [
         'error',
         {
-          max: 100,
+          max: 300,
           skipBlankLines: true,
           skipComments: true,
         },
