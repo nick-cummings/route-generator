@@ -9,6 +9,7 @@ import MainContent from './components/MainContent'
 import PageHeader from './components/PageHeader'
 import { useAddressExtraction } from './hooks/useAddressExtraction'
 import { useApiKey } from './hooks/useApiKey'
+import { useGeolocation } from './hooks/useGeolocation'
 import type { Address } from './types/address'
 
 const MAX_STOPS_PER_ROUTE = 10
@@ -35,8 +36,12 @@ export default function Home(): React.JSX.Element {
     removeAddress,
     resetExtraction,
   } = useAddressExtraction()
+  const { latitude, longitude } = useGeolocation()
 
-  const allChunks = useMemo(() => buildRouteChunks(extractedAddresses), [extractedAddresses])
+  const allChunks = useMemo(
+    () => buildRouteChunks(extractedAddresses, latitude, longitude),
+    [extractedAddresses, latitude, longitude]
+  )
   const routeChunks = allChunks.filter((chunk) => !deletedChunks.has(chunk.id))
 
   const handleApiKeySubmit = (e: React.FormEvent): void => {
@@ -141,19 +146,27 @@ function buildMapsUrl(addresses: Address[], origin: string): string {
   return mapsUrl
 }
 
-function buildRouteChunks(addresses: Address[]): RouteChunk[] {
+function buildRouteChunks(
+  addresses: Address[],
+  latitude: number | null,
+  longitude: number | null
+): RouteChunk[] {
   if (addresses.length === 0) return []
 
   const yourLocation = 'Your Current Location'
+  const firstOrigin =
+    latitude !== null && longitude !== null
+      ? `${String(latitude)},${String(longitude)}`
+      : 'My+Location'
 
   if (addresses.length <= MAX_STOPS_PER_ROUTE) {
-    return [{ id: 0, url: buildMapsUrl(addresses, 'My+Location'), addresses, startingPoint: yourLocation }]
+    return [{ id: 0, url: buildMapsUrl(addresses, firstOrigin), addresses, startingPoint: yourLocation }]
   }
 
   const chunks: RouteChunk[] = []
   let startIndex = 0
   let chunkId = 0
-  let origin = 'My+Location'
+  let origin = firstOrigin
   let startingPoint = yourLocation
 
   while (startIndex < addresses.length) {

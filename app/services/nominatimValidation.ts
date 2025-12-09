@@ -40,7 +40,8 @@ class NominatimValidator {
     this.processing = true
 
     while (this.queue.length > 0) {
-      const item = this.queue.shift()!
+      const item = this.queue.shift()
+      if (!item) continue
 
       // Enforce rate limit: wait if needed
       const now = Date.now()
@@ -83,7 +84,7 @@ class NominatimValidator {
     const response = await fetch(`/api/validate-address?${params.toString()}`)
 
     if (!response.ok) {
-      throw new Error(`Validation API error: ${response.status}`)
+      throw new Error(`Validation API error: ${String(response.status)}`)
     }
 
     const data = (await response.json()) as { verified: boolean; results: unknown[] }

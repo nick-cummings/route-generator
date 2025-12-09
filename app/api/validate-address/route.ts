@@ -26,7 +26,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: `Nominatim API error: ${response.status}` },
+        { error: `Nominatim API error: ${String(response.status)}` },
         { status: response.status }
       )
     }
