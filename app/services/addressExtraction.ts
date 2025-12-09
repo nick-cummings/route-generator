@@ -1,7 +1,4 @@
-interface Address {
-  text: string
-  order: number
-}
+import type { Address } from '../types/address'
 
 interface ApiResponse {
   addresses?: string[]
@@ -32,6 +29,10 @@ async function extractFromSingleImage(file: File, fileIndex: number): Promise<Ad
   return data.addresses.map((addr: string, idx: number) => ({
     text: addr,
     order: fileIndex * 100 + idx,
+    validation: {
+      status: 'pending' as const,
+      errors: [],
+    },
   }))
 }
 

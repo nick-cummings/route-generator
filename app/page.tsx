@@ -9,13 +9,9 @@ import MainContent from './components/MainContent'
 import PageHeader from './components/PageHeader'
 import { useAddressExtraction } from './hooks/useAddressExtraction'
 import { useApiKey } from './hooks/useApiKey'
+import type { Address } from './types/address'
 
 const MAX_STOPS_PER_ROUTE = 10
-
-interface Address {
-  text: string
-  order: number
-}
 
 export interface RouteChunk {
   id: number

@@ -3,13 +3,9 @@
 import { useState } from 'react'
 
 import { useLanguage } from '../contexts/LanguageContext'
+import type { Address } from '../types/address'
 
 import AddressItem from './AddressItem'
-
-interface Address {
-  text: string
-  order: number
-}
 
 interface RouteChunkCardProps {
   chunkIndex: number
@@ -91,8 +87,7 @@ export default function RouteChunkCard({
             {addresses.map((addr, idx) => (
               <AddressItem
                 key={addr.order}
-                text={addr.text}
-                order={addr.order}
+                address={addr}
                 index={idx}
                 onRemove={onRemoveAddress}
                 removeTooltip={t.addressList.removeAddress}
