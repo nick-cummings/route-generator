@@ -103,8 +103,8 @@ export default function RouteChunkCard({
             onOpenRoute={onOpenRoute}
             onCopyLink={handleCopyLink}
             copied={copied}
-            openLabel={t.actions.openInGoogleMaps}
-            copyLabel={t.actions.copyLink}
+            openLabel="Open"
+            copyLabel="Copy"
             copiedLabel={t.actions.linkCopied}
           />
         </>
