@@ -10,14 +10,24 @@ import PageHeader from './components/PageHeader'
 import { useAddressExtraction } from './hooks/useAddressExtraction'
 import { useApiKey } from './hooks/useApiKey'
 
+const MAX_STOPS_PER_ROUTE = 10
+
 interface Address {
   text: string
   order: number
 }
 
+export interface RouteChunk {
+  id: number
+  url: string
+  addresses: Address[]
+  startingPoint: string
+}
+
 export default function Home(): React.JSX.Element {
   const [files, setFiles] = useState<File[]>([])
   const [fileInputKey, setFileInputKey] = useState(0)
+  const [deletedChunks, setDeletedChunks] = useState<Set<number>>(new Set())
 
   const { apiKey, isApiKeySet, isInitialized, setApiKey, saveApiKey, clearApiKey } = useApiKey()
   const {
@@ -30,7 +40,8 @@ export default function Home(): React.JSX.Element {
     resetExtraction,
   } = useAddressExtraction()
 
-  const routeUrl = useMemo(() => buildMapsUrl(extractedAddresses), [extractedAddresses])
+  const allChunks = useMemo(() => buildRouteChunks(extractedAddresses), [extractedAddresses])
+  const routeChunks = allChunks.filter((chunk) => !deletedChunks.has(chunk.id))
 
   const handleApiKeySubmit = (e: React.FormEvent): void => {
     e.preventDefault()
@@ -56,6 +67,15 @@ export default function Home(): React.JSX.Element {
     setFiles([])
     resetExtraction()
     setFileInputKey((prev) => prev + 1)
+    setDeletedChunks(new Set())
+  }
+
+  const handleDeleteChunk = (chunkId: number): void => {
+    setDeletedChunks((prev) => {
+      const next = new Set(prev)
+      next.add(chunkId)
+      return next
+    })
   }
 
   if (!isInitialized) return <LoadingSpinner />
@@ -89,12 +109,13 @@ export default function Home(): React.JSX.Element {
           onReset={resetApp}
         />
 
-        {extractedAddresses.length > 0 && (
+        {routeChunks.length > 0 && (
           <AddressList
-            addresses={extractedAddresses}
+            routeChunks={routeChunks}
+            onOpenRoute={openRoute}
+            onCopyLink={copyRouteLink}
             onRemoveAddress={removeAddress}
-            onGenerateRoute={() => routeUrl && openRoute(routeUrl)}
-            onCopyLink={() => routeUrl && copyRouteLink(routeUrl)}
+            onDeleteChunk={handleDeleteChunk}
             onReset={resetApp}
           />
         )}
@@ -107,11 +128,10 @@ function encodeAddress(address: string): string {
   return address.replaceAll(' ', '+')
 }
 
-function buildMapsUrl(addresses: Address[]): string | null {
+function buildMapsUrl(addresses: Address[], origin: string): string {
   const lastAddress = addresses.at(-1)
-  if (!lastAddress) return null
+  if (!lastAddress) return ''
 
-  const origin = 'My+Location'
   const destination = encodeAddress(lastAddress.text)
   const waypoints = addresses.slice(0, -1).map((addr) => encodeAddress(addr.text))
 
@@ -123,6 +143,45 @@ function buildMapsUrl(addresses: Address[]): string | null {
 
   mapsUrl += '&travelmode=driving'
   return mapsUrl
+}
+
+function buildRouteChunks(addresses: Address[]): RouteChunk[] {
+  if (addresses.length === 0) return []
+
+  const yourLocation = 'Your Current Location'
+
+  if (addresses.length <= MAX_STOPS_PER_ROUTE) {
+    return [{ id: 0, url: buildMapsUrl(addresses, 'My+Location'), addresses, startingPoint: yourLocation }]
+  }
+
+  const chunks: RouteChunk[] = []
+  let startIndex = 0
+  let chunkId = 0
+  let origin = 'My+Location'
+  let startingPoint = yourLocation
+
+  while (startIndex < addresses.length) {
+    const endIndex = Math.min(startIndex + MAX_STOPS_PER_ROUTE, addresses.length)
+    const chunkAddresses = addresses.slice(startIndex, endIndex)
+
+    chunks.push({
+      id: chunkId,
+      url: buildMapsUrl(chunkAddresses, origin),
+      addresses: chunkAddresses,
+      startingPoint,
+    })
+
+    const lastAddress = chunkAddresses.at(-1)
+    if (lastAddress) {
+      origin = encodeAddress(lastAddress.text)
+      startingPoint = lastAddress.text
+    }
+
+    startIndex = endIndex
+    chunkId++
+  }
+
+  return chunks
 }
 
 function openRoute(url: string): void {

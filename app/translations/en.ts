@@ -46,6 +46,8 @@ export const en = {
     generateRoute: 'Generate Route',
     copyLink: 'Copy Link',
     linkCopied: 'Link Copied!',
+    route: 'Route',
+    deleteRoute: 'Delete route',
   },
   errors: {
     missingImage: 'Missing image',

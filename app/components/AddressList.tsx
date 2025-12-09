@@ -1,34 +1,32 @@
 'use client'
 
 import { useLanguage } from '../contexts/LanguageContext'
+import { RouteChunk } from '../page'
 
-import AddressItem from './AddressItem'
-import RouteActions from './RouteActions'
-
-interface Address {
-  text: string
-  order: number
-}
+import RouteChunkCard from './RouteChunkCard'
 
 interface AddressListProps {
-  addresses: Address[]
+  routeChunks: RouteChunk[]
+  onOpenRoute: (url: string) => void
+  onCopyLink: (url: string) => void
   onRemoveAddress: (order: number) => void
-  onGenerateRoute: () => void
-  onCopyLink: () => void
+  onDeleteChunk: (chunkIndex: number) => void
   onReset: () => void
 }
 
 export default function AddressList({
-  addresses,
-  onRemoveAddress,
-  onGenerateRoute,
+  routeChunks,
+  onOpenRoute,
   onCopyLink,
+  onRemoveAddress,
+  onDeleteChunk,
   onReset,
 }: Readonly<AddressListProps>): React.JSX.Element {
   const { t } = useLanguage()
-  const addressCount = addresses.length
 
-  if (addressCount === 0) {
+  const totalAddresses = routeChunks.reduce((sum, chunk) => sum + chunk.addresses.length, 0)
+
+  if (totalAddresses === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500 mb-4">{t.addressList.allRemoved}</p>
@@ -43,38 +41,38 @@ export default function AddressList({
     )
   }
 
-  const stopsText = addressCount === 1 ? t.addressList.stop : t.addressList.stops
+  const stopsText = totalAddresses === 1 ? t.addressList.stop : t.addressList.stops
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-3 sm:p-6">
       <div className="flex flex-col h-full">
-        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex-shrink-0">
-          {t.addressList.routePlan} ({String(addressCount)} {stopsText})
-        </h2>
-        <div className="space-y-2 pb-36 sm:pb-0 sm:mb-4 sm:max-h-[400px] sm:overflow-y-auto sm:pr-2 flex-grow sm:custom-scrollbar">
-          <div className="flex items-center justify-between p-3 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <span className="text-sm font-medium text-blue-600">📍</span>
-              <span className="text-sm sm:text-base text-blue-700 font-medium">
-                {t.addressList.yourLocation}
-              </span>
-            </div>
-            <span className="text-xs text-blue-600 uppercase tracking-wide">
-              {t.addressList.start}
-            </span>
-          </div>
-          {addresses.map((addr, idx) => (
-            <AddressItem
-              key={addr.order}
-              text={addr.text}
-              order={addr.order}
-              index={idx}
-              onRemove={onRemoveAddress}
-              removeTooltip={t.addressList.removeAddress}
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold">
+            {t.addressList.routePlan} ({String(totalAddresses)} {stopsText})
+          </h2>
+          <button
+            onClick={onReset}
+            type="button"
+            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {t.common.reset}
+          </button>
+        </div>
+        <div className="space-y-4">
+          {routeChunks.map((chunk, idx) => (
+            <RouteChunkCard
+              key={chunk.id}
+              chunkIndex={idx}
+              totalChunks={routeChunks.length}
+              addresses={chunk.addresses}
+              startingPoint={chunk.startingPoint}
+              onOpenRoute={() => onOpenRoute(chunk.url)}
+              onCopyLink={() => onCopyLink(chunk.url)}
+              onRemoveAddress={onRemoveAddress}
+              onDeleteChunk={() => onDeleteChunk(chunk.id)}
             />
           ))}
         </div>
-        <RouteActions onGenerateRoute={onGenerateRoute} onCopyLink={onCopyLink} onReset={onReset} />
       </div>
     </div>
   )
