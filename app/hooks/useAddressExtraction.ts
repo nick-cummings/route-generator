@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { extractAddressesFromImages } from '../services/addressExtraction'
 import { nominatimValidator } from '../services/nominatimValidation'
@@ -117,11 +117,31 @@ async function runValidation(
 }
 
 export function useAddressExtraction(): UseAddressExtractionReturn {
-  const [extractedAddresses, setExtractedAddresses] = useState<Address[]>([])
+  const [extractedAddresses, setExtractedAddresses] = useState<Address[]>(() => {
+    // Load persisted addresses from localStorage on initialization
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('extracted_addresses')
+      if (saved) {
+        try {
+          return JSON.parse(saved) as Address[]
+        } catch {
+          return []
+        }
+      }
+    }
+    return []
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
   const [validating, setValidating] = useState(false)
+
+  // Persist addresses to localStorage whenever they change
+  useEffect(() => {
+    if (extractedAddresses.length > 0) {
+      localStorage.setItem('extracted_addresses', JSON.stringify(extractedAddresses))
+    }
+  }, [extractedAddresses])
 
   const updateValidation = (update: ValidationUpdate): void => {
     setExtractedAddresses((prev) => prev.map((addr) => createUpdatedAddress(addr, update)))
@@ -160,6 +180,7 @@ export function useAddressExtraction(): UseAddressExtractionReturn {
     setExtractedAddresses([])
     setError(null)
     setProgress(0)
+    localStorage.removeItem('extracted_addresses')
   }
 
   return {

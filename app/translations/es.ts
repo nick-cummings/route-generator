@@ -40,6 +40,12 @@ export const es = {
     start: 'Inicio',
     allRemoved: 'Todas las direcciones han sido eliminadas',
     removeAddress: 'Eliminar esta dirección',
+    open: 'Abrir',
+    copy: 'Copiar',
+    useGeocode: 'Usar Geocódigo',
+    useAddress: 'Usar Dirección',
+    edit: 'Editar',
+    remove: 'Eliminar',
   },
   actions: {
     openInGoogleMaps: 'Abrir en Google Maps',

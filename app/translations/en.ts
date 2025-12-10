@@ -40,6 +40,12 @@ export const en = {
     start: 'Start',
     allRemoved: 'All addresses have been removed',
     removeAddress: 'Remove this address',
+    open: 'Open',
+    copy: 'Copy',
+    useGeocode: 'Use Geocode',
+    useAddress: 'Use Address',
+    edit: 'Edit',
+    remove: 'Remove',
   },
   actions: {
     openInGoogleMaps: 'Open in Google Maps',

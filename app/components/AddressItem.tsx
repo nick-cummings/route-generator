@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
+import { useLanguage } from '../contexts/LanguageContext'
 import type { Address, ValidationResult } from '../types/address'
 
 interface AddressItemProps {
@@ -82,8 +83,11 @@ export default function AddressItem({
   onCopy,
   onOpen,
 }: Readonly<AddressItemProps>): React.JSX.Element {
+  const { t } = useLanguage()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuAbove, setMenuAbove] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent): void {
@@ -96,6 +100,23 @@ export default function AddressItem({
       document.addEventListener('mousedown', handleClickOutside)
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [menuOpen])
+
+  // Check if menu should open above to avoid going off-screen
+  useEffect(() => {
+    if (menuOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect()
+      const menuHeight = 280 // Approximate height of menu with 5 items
+      const spaceBelow = window.innerHeight - buttonRect.bottom
+      const spaceAbove = buttonRect.top
+
+      // If not enough space below and more space above, show menu above
+      if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+        setMenuAbove(true)
+      } else {
+        setMenuAbove(false)
       }
     }
   }, [menuOpen])
@@ -130,6 +151,7 @@ export default function AddressItem({
       </div>
       <div className="relative flex-shrink-0 ml-2" ref={menuRef}>
         <button
+          ref={buttonRef}
           onClick={() => setMenuOpen(!menuOpen)}
           type="button"
           className="text-gray-500 hover:text-gray-700 transition-colors p-1"
@@ -140,32 +162,36 @@ export default function AddressItem({
           </svg>
         </button>
         {menuOpen && (
-          <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+          <div
+            className={`absolute right-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10 ${
+              menuAbove ? 'bottom-full mb-1' : 'top-full mt-1'
+            }`}
+          >
             <div className="py-1">
               <MenuButton
                 icon={<OpenIcon />}
-                label="Open"
+                label={t.addressList.open}
                 onClick={() => handleMenuAction(() => onOpen(address.text))}
               />
               <MenuButton
                 icon={<CopyIcon />}
-                label="Copy"
+                label={t.addressList.copy}
                 onClick={() => handleMenuAction(() => onCopy(textToCopy))}
               />
               <MenuButton
                 icon={<GeocodeIcon />}
-                label={address.useGeocode ? 'Use Address' : 'Use Geocode'}
+                label={address.useGeocode ? t.addressList.useAddress : t.addressList.useGeocode}
                 onClick={() => handleMenuAction(() => onToggleGeocode(address.order))}
               />
               <MenuButton
                 icon={<EditIcon />}
-                label="Edit"
+                label={t.addressList.edit}
                 onClick={() => handleMenuAction(() => onEdit(address.order))}
               />
               <div className="border-t border-gray-200" />
               <MenuButton
                 icon={<RemoveIcon />}
-                label="Remove"
+                label={t.addressList.remove}
                 onClick={() => handleMenuAction(() => onRemove(address.order))}
                 className="text-red-600 hover:bg-red-50"
               />
