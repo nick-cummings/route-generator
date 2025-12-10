@@ -15,6 +15,10 @@ interface RouteChunkCardProps {
   onOpenRoute: () => void
   onCopyLink: () => void
   onRemoveAddress: (order: number) => void
+  onEditAddress: (order: number) => void
+  onToggleGeocode: (order: number) => void
+  onCopyAddress: (text: string) => void
+  onOpenAddress: (text: string) => void
   onDeleteChunk: () => void
 }
 
@@ -26,6 +30,10 @@ export default function RouteChunkCard({
   onOpenRoute,
   onCopyLink,
   onRemoveAddress,
+  onEditAddress,
+  onToggleGeocode,
+  onCopyAddress,
+  onOpenAddress,
   onDeleteChunk,
 }: Readonly<RouteChunkCardProps>): React.JSX.Element {
   const { t } = useLanguage()
@@ -90,6 +98,10 @@ export default function RouteChunkCard({
                 address={addr}
                 index={idx}
                 onRemove={onRemoveAddress}
+                onEdit={onEditAddress}
+                onToggleGeocode={onToggleGeocode}
+                onCopy={onCopyAddress}
+                onOpen={onOpenAddress}
                 removeTooltip={t.addressList.removeAddress}
               />
             ))}

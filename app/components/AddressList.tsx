@@ -10,6 +10,10 @@ interface AddressListProps {
   onOpenRoute: (url: string) => void
   onCopyLink: (url: string) => void
   onRemoveAddress: (order: number) => void
+  onEditAddress: (order: number) => void
+  onToggleGeocode: (order: number) => void
+  onCopyAddress: (text: string) => void
+  onOpenAddress: (text: string) => void
   onDeleteChunk: (chunkIndex: number) => void
   onReset: () => void
 }
@@ -19,6 +23,10 @@ export default function AddressList({
   onOpenRoute,
   onCopyLink,
   onRemoveAddress,
+  onEditAddress,
+  onToggleGeocode,
+  onCopyAddress,
+  onOpenAddress,
   onDeleteChunk,
   onReset,
 }: Readonly<AddressListProps>): React.JSX.Element {
@@ -69,6 +77,10 @@ export default function AddressList({
               onOpenRoute={() => onOpenRoute(chunk.url)}
               onCopyLink={() => onCopyLink(chunk.url)}
               onRemoveAddress={onRemoveAddress}
+              onEditAddress={onEditAddress}
+              onToggleGeocode={onToggleGeocode}
+              onCopyAddress={onCopyAddress}
+              onOpenAddress={onOpenAddress}
               onDeleteChunk={() => onDeleteChunk(chunk.id)}
             />
           ))}

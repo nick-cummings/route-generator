@@ -8,6 +8,8 @@ interface QueueItem {
 export interface NominatimValidationResult {
   verified: boolean
   error?: string
+  latitude?: number
+  longitude?: number
 }
 
 /**
@@ -52,13 +54,15 @@ class NominatimValidator {
 
       // Make API call
       try {
-        const results = await this.searchAddress(item.address)
+        const result = await this.searchAddress(item.address)
         this.lastRequestTime = Date.now()
 
         // Address is verified if Nominatim returns any results
         item.resolve({
-          verified: results.length > 0,
+          verified: result.verified,
           error: undefined,
+          latitude: result.latitude,
+          longitude: result.longitude,
         })
       } catch (error) {
         item.resolve({
@@ -76,7 +80,9 @@ class NominatimValidator {
    * @param address The address string to search for
    * @returns Validation result from API
    */
-  private async searchAddress(address: string): Promise<unknown[]> {
+  private async searchAddress(
+    address: string
+  ): Promise<{ verified: boolean; latitude?: number; longitude?: number }> {
     const params = new URLSearchParams({
       address,
     })
@@ -87,8 +93,21 @@ class NominatimValidator {
       throw new Error(`Validation API error: ${String(response.status)}`)
     }
 
-    const data = (await response.json()) as { verified: boolean; results: unknown[] }
-    return data.results
+    const data = (await response.json()) as {
+      verified: boolean
+      results: Array<{ lat: string; lon: string }>
+    }
+
+    // Extract lat/lng from first result if available
+    const firstResult = data.results[0]
+    const latitude = firstResult ? parseFloat(firstResult.lat) : undefined
+    const longitude = firstResult ? parseFloat(firstResult.lon) : undefined
+
+    return {
+      verified: data.verified,
+      latitude,
+      longitude,
+    }
   }
 
   /**

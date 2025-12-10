@@ -4,6 +4,7 @@ import { useState, useMemo, ChangeEvent } from 'react'
 
 import AddressList from './components/AddressList'
 import ApiKeySetup from './components/ApiKeySetup'
+import EditAddressModal from './components/EditAddressModal'
 import LoadingSpinner from './components/LoadingSpinner'
 import MainContent from './components/MainContent'
 import PageHeader from './components/PageHeader'
@@ -21,10 +22,12 @@ export interface RouteChunk {
   startingPoint: string
 }
 
+// eslint-disable-next-line max-lines-per-function
 export default function Home(): React.JSX.Element {
   const [files, setFiles] = useState<File[]>([])
   const [fileInputKey, setFileInputKey] = useState(0)
   const [deletedChunks, setDeletedChunks] = useState<Set<number>>(new Set())
+  const [editingAddress, setEditingAddress] = useState<{ order: number; text: string } | null>(null)
 
   const { apiKey, isApiKeySet, isInitialized, setApiKey, saveApiKey, clearApiKey } = useApiKey()
   const {
@@ -34,6 +37,7 @@ export default function Home(): React.JSX.Element {
     progress,
     processImages,
     removeAddress,
+    updateAddress,
     resetExtraction,
   } = useAddressExtraction()
   const { latitude, longitude } = useGeolocation()
@@ -79,6 +83,28 @@ export default function Home(): React.JSX.Element {
     })
   }
 
+  const handleEditAddress = (order: number): void => {
+    const address = extractedAddresses.find((addr) => addr.order === order)
+    if (address) {
+      setEditingAddress({ order, text: address.text })
+    }
+  }
+
+  const handleSaveEdit = (newText: string): void => {
+    if (editingAddress) {
+      updateAddress(editingAddress.order, { text: newText })
+    }
+    setEditingAddress(null)
+  }
+
+  const handleToggleGeocode = (order: number): void => {
+    const address = extractedAddresses.find((addr) => addr.order === order)
+    if (address) {
+      updateAddress(order, { useGeocode: !address.useGeocode })
+    }
+  }
+
+
   if (!isInitialized) return <LoadingSpinner />
 
   if (!isApiKeySet) {
@@ -111,14 +137,26 @@ export default function Home(): React.JSX.Element {
         />
 
         {routeChunks.length > 0 && (
-          <AddressList
-            routeChunks={routeChunks}
-            onOpenRoute={openRoute}
-            onCopyLink={copyRouteLink}
-            onRemoveAddress={removeAddress}
-            onDeleteChunk={handleDeleteChunk}
-            onReset={resetApp}
-          />
+          <>
+            <AddressList
+              routeChunks={routeChunks}
+              onOpenRoute={openRoute}
+              onCopyLink={copyRouteLink}
+              onRemoveAddress={removeAddress}
+              onEditAddress={handleEditAddress}
+              onToggleGeocode={handleToggleGeocode}
+              onCopyAddress={copyAddressToClipboard}
+              onOpenAddress={openAddressInMaps}
+              onDeleteChunk={handleDeleteChunk}
+              onReset={resetApp}
+            />
+            <EditAddressModal
+              isOpen={editingAddress !== null}
+              address={editingAddress?.text ?? ''}
+              onClose={() => setEditingAddress(null)}
+              onSave={handleSaveEdit}
+            />
+          </>
         )}
       </div>
     </div>
@@ -129,12 +167,19 @@ function encodeAddress(address: string): string {
   return address.replaceAll(' ', '+')
 }
 
+function getAddressForUrl(addr: Address): string {
+  if (addr.useGeocode && addr.latitude !== undefined && addr.longitude !== undefined) {
+    return `${String(addr.latitude)},${String(addr.longitude)}`
+  }
+  return encodeAddress(addr.text)
+}
+
 function buildMapsUrl(addresses: Address[], origin: string): string {
   const lastAddress = addresses.at(-1)
   if (!lastAddress) return ''
 
-  const destination = encodeAddress(lastAddress.text)
-  const waypoints = addresses.slice(0, -1).map((addr) => encodeAddress(addr.text))
+  const destination = getAddressForUrl(lastAddress)
+  const waypoints = addresses.slice(0, -1).map((addr) => getAddressForUrl(addr))
 
   let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`
 
@@ -182,7 +227,7 @@ function buildRouteChunks(
 
     const lastAddress = chunkAddresses.at(-1)
     if (lastAddress) {
-      origin = encodeAddress(lastAddress.text)
+      origin = getAddressForUrl(lastAddress)
       startingPoint = lastAddress.text
     }
 
@@ -205,4 +250,20 @@ function openRoute(url: string): void {
 
 function copyRouteLink(url: string): void {
   void navigator.clipboard.writeText(url)
+}
+
+function copyAddressToClipboard(text: string): void {
+  void navigator.clipboard.writeText(text)
+}
+
+function openAddressInMaps(text: string): void {
+  const encodedAddress = text.replaceAll(' ', '+')
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+  if (isMobile) {
+    globalThis.location.href = url
+  } else {
+    window.open(url, '_blank')
+  }
 }

@@ -36,25 +36,31 @@ interface UseAddressExtractionReturn {
   validating: boolean
   processImages: (files: File[]) => Promise<void>
   removeAddress: (order: number) => void
+  updateAddress: (order: number, updates: Partial<Address>) => void
   resetExtraction: () => void
 }
 
-function createUpdatedAddress(
-  address: Address,
-  order: number,
-  status: 'valid' | 'error',
+interface ValidationUpdate {
+  order: number
+  status: 'valid' | 'error'
   verified: boolean
-): Address {
-  if (address.order !== order) {
+  latitude?: number
+  longitude?: number
+}
+
+function createUpdatedAddress(address: Address, update: ValidationUpdate): Address {
+  if (address.order !== update.order) {
     return address
   }
 
   return {
     ...address,
+    latitude: update.latitude,
+    longitude: update.longitude,
     validation: {
-      status,
-      errors: verified ? [] : ['Could not verify address'],
-      nominatimVerified: verified,
+      status: update.status,
+      errors: update.verified ? [] : ['Could not verify address'],
+      nominatimVerified: update.verified,
       lastValidated: Date.now(),
     },
   }
@@ -62,7 +68,7 @@ function createUpdatedAddress(
 
 async function validateSingleAddress(
   addr: Address,
-  updateFn: (order: number, status: 'valid' | 'error', verified: boolean) => void
+  updateFn: (update: ValidationUpdate) => void
 ): Promise<void> {
   if (addr.validation?.status === 'invalid') {
     return
@@ -70,9 +76,24 @@ async function validateSingleAddress(
 
   try {
     const result = await nominatimValidator.validateAddress(addr.text)
-    updateFn(addr.order, result.verified ? 'valid' : 'error', result.verified)
+    const update: ValidationUpdate = {
+      order: addr.order,
+      status: result.verified ? 'valid' : 'error',
+      verified: result.verified,
+    }
+
+    if (typeof result.latitude === 'number') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      update.latitude = result.latitude
+    }
+    if (typeof result.longitude === 'number') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      update.longitude = result.longitude
+    }
+
+    updateFn(update)
   } catch {
-    updateFn(addr.order, 'error', false)
+    updateFn({ order: addr.order, status: 'error', verified: false })
   }
 }
 
@@ -82,7 +103,7 @@ async function runValidation(
   addresses: Address[],
   setAddresses: SetAddressesFn,
   setValidating: (value: boolean) => void,
-  updateFn: (order: number, status: 'valid' | 'error', verified: boolean) => void
+  updateFn: (update: ValidationUpdate) => void
 ): Promise<void> {
   setValidating(true)
   const validated = addresses.map((addr) => applyBasicValidation(addr))
@@ -102,8 +123,14 @@ export function useAddressExtraction(): UseAddressExtractionReturn {
   const [progress, setProgress] = useState(0)
   const [validating, setValidating] = useState(false)
 
-  const updateValidation = (order: number, status: 'valid' | 'error', verified: boolean): void => {
-    setExtractedAddresses((prev) => prev.map((addr) => createUpdatedAddress(addr, order, status, verified)))
+  const updateValidation = (update: ValidationUpdate): void => {
+    setExtractedAddresses((prev) => prev.map((addr) => createUpdatedAddress(addr, update)))
+  }
+
+  const updateAddress = (order: number, updates: Partial<Address>): void => {
+    setExtractedAddresses((prev) =>
+      prev.map((addr) => (addr.order === order ? { ...addr, ...updates } : addr))
+    )
   }
 
   const processImages = async (files: File[]): Promise<void> => {
@@ -143,6 +170,7 @@ export function useAddressExtraction(): UseAddressExtractionReturn {
     validating,
     processImages,
     removeAddress,
+    updateAddress,
     resetExtraction,
   }
 }

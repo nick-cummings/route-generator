@@ -9,4 +9,7 @@ export interface Address {
   text: string
   order: number
   validation?: ValidationResult
+  latitude?: number
+  longitude?: number
+  useGeocode?: boolean
 }
