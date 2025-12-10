@@ -9,7 +9,7 @@ import LoadingSpinner from './components/LoadingSpinner'
 import MainContent from './components/MainContent'
 import PageHeader from './components/PageHeader'
 import { useAddressExtraction } from './hooks/useAddressExtraction'
-import { useApiKey } from './hooks/useApiKey'
+import { ApiProvider, useApiKey } from './hooks/useApiKey'
 import { useGeolocation } from './hooks/useGeolocation'
 import type { Address } from './types/address'
 
@@ -29,7 +29,8 @@ export default function Home(): React.JSX.Element {
   const [deletedChunks, setDeletedChunks] = useState<Set<number>>(new Set())
   const [editingAddress, setEditingAddress] = useState<{ order: number; text: string } | null>(null)
 
-  const { apiKey, isApiKeySet, isInitialized, setApiKey, saveApiKey, clearApiKey } = useApiKey()
+  const { apiKey, provider, isApiKeySet, isInitialized, setApiKey, setProvider, saveApiKey, clearApiKey } =
+    useApiKey()
   const {
     extractedAddresses,
     loading,
@@ -50,7 +51,7 @@ export default function Home(): React.JSX.Element {
 
   const handleApiKeySubmit = (e: React.FormEvent): void => {
     e.preventDefault()
-    saveApiKey(apiKey)
+    saveApiKey(apiKey, provider)
   }
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -108,7 +109,15 @@ export default function Home(): React.JSX.Element {
   if (!isInitialized) return <LoadingSpinner />
 
   if (!isApiKeySet) {
-    return <ApiKeySetup apiKey={apiKey} onApiKeyChange={setApiKey} onSubmit={handleApiKeySubmit} />
+    return (
+      <ApiKeySetup
+        apiKey={apiKey}
+        provider={provider}
+        onApiKeyChange={(key: string) => setApiKey(key)}
+        onProviderChange={(provider: ApiProvider) => setProvider(provider)}
+        onSubmit={handleApiKeySubmit}
+      />
+    )
   }
 
   return (

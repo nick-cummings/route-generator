@@ -1,12 +1,18 @@
 import { Anthropic, APIError } from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
+import OpenAI from 'openai'
+
+type ApiProvider = 'anthropic' | 'openai'
 
 async function parseFormData(request: NextRequest) {
   const formData = await request.formData()
   const image = formData.get('image') as File | null
-  const apiKey = (formData.get('apiKey') as string) || process.env.ANTHROPIC_API_KEY
+  const provider = (formData.get('provider') as ApiProvider) || 'anthropic'
+  const apiKey =
+    (formData.get('apiKey') as string) ||
+    (provider === 'openai' ? process.env.OPENAI_API_KEY : process.env.ANTHROPIC_API_KEY)
 
-  return { image, apiKey }
+  return { image, apiKey, provider }
 }
 
 async function convertImageToBase64(image: File): Promise<string> {
@@ -15,7 +21,10 @@ async function convertImageToBase64(image: File): Promise<string> {
   return buffer.toString('base64')
 }
 
-async function extractAddressesFromImage(
+const EXTRACTION_PROMPT =
+  'Extract all delivery addresses from this image. Return ONLY the street addresses (number and street name), one per line, in the order they appear. Include apartment/unit numbers if present. DO NOT include city names, state names, zip codes, timestamps, delivery instructions, or any other information. Each line should contain ONLY the street address. For example: "2802 East Comstock Avenue" not "2802 East Comstock Avenue, NAMPA". If no addresses are found, return "NO_ADDRESSES_FOUND".'
+
+async function extractAddressesFromImageAnthropic(
   anthropic: Anthropic,
   image: File,
   base64: string
@@ -29,7 +38,7 @@ async function extractAddressesFromImage(
         content: [
           {
             type: 'text',
-            text: 'Extract all delivery addresses from this image. Return ONLY the street addresses (number and street name), one per line, in the order they appear. Include apartment/unit numbers if present. DO NOT include city names, state names, zip codes, timestamps, delivery instructions, or any other information. Each line should contain ONLY the street address. For example: "2802 East Comstock Avenue" not "2802 East Comstock Avenue, NAMPA". If no addresses are found, return "NO_ADDRESSES_FOUND".',
+            text: EXTRACTION_PROMPT,
           },
           {
             type: 'image',
@@ -46,6 +55,36 @@ async function extractAddressesFromImage(
 
   const [content] = response.content
   return 'text' in content ? content.text : ''
+}
+
+async function extractAddressesFromImageOpenAI(
+  openai: OpenAI,
+  image: File,
+  base64: string
+): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    max_tokens: 1000,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: EXTRACTION_PROMPT,
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:${image.type};base64,${base64}`,
+            },
+          },
+        ],
+      },
+    ],
+  })
+
+  return response.choices[0]?.message?.content || ''
 }
 
 function filterValidAddresses(text: string): string[] {
@@ -83,7 +122,7 @@ function handleApiError(error: unknown): NextResponse {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const { image, apiKey } = await parseFormData(request)
+    const { image, apiKey, provider } = await parseFormData(request)
 
     if (!image) {
       return NextResponse.json({ error: 'Missing image' }, { status: 400 })
@@ -92,17 +131,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!apiKey) {
       return NextResponse.json(
         {
-          error:
-            'Missing API key. Please provide an API key or set ANTHROPIC_API_KEY environment variable.',
+          error: `Missing API key. Please provide an API key or set ${provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY'} environment variable.`,
         },
         { status: 400 }
       )
     }
 
     const base64 = await convertImageToBase64(image)
-    const anthropic = new Anthropic({ apiKey })
+    let text: string
 
-    const text = await extractAddressesFromImage(anthropic, image, base64)
+    if (provider === 'openai') {
+      const openai = new OpenAI({ apiKey })
+      text = await extractAddressesFromImageOpenAI(openai, image, base64)
+    } else {
+      const anthropic = new Anthropic({ apiKey })
+      text = await extractAddressesFromImageAnthropic(anthropic, image, base64)
+    }
+
     const addresses = filterValidAddresses(text)
 
     return NextResponse.json({ addresses })

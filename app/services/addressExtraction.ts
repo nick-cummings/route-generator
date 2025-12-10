@@ -8,8 +8,10 @@ interface ApiResponse {
 async function extractFromSingleImage(file: File, fileIndex: number): Promise<Address[]> {
   const formData = new FormData()
   formData.append('image', file)
-  const storedKey = localStorage.getItem('claude_api_key')
+  const storedKey = localStorage.getItem('ai_api_key')
+  const storedProvider = localStorage.getItem('ai_provider')
   formData.append('apiKey', storedKey ?? '')
+  formData.append('provider', storedProvider ?? 'anthropic')
 
   const response = await fetch('/api/extract-addresses', {
     method: 'POST',
