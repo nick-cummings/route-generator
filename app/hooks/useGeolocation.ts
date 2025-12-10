@@ -58,6 +58,7 @@ export function useGeolocation(): GeolocationState {
       return
     }
 
+    // eslint-disable-next-line sonarjs/no-intrusive-permissions
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setState(createSuccessState(position))
